@@ -1,0 +1,78 @@
+/*
+ D5Protocol.strings
+ D5Home
+ 
+ Created by anthonyxoing on 14/5/15.
+ Copyright (c) 2015年 anthonyxoing. All rights reserved.
+ */
+"501" = "You can not enter the expression";
+"1000" = "Parameter error";
+"1001" = "User not exist";
+"1002" = "Authorized operation failed ,please login again";
+"1003" = "Equipment has been rebind again";
+"1004" = "The device is not exist";
+"1005" = "No upload file";
+"1006" = "Upload %d photos to the album";
+"1007" = "You add unregistered users";
+"1008" = "Cann't add yourself";
+"1009" = "You are invited to join the members of his circle";
+"1010" = "Invite others to join the circle members";
+"1011" = "Message sending failed";
+"1012" = "The platform identity is incorrect";
+"1013" = "Members have reached the maximum";
+"1014" = "Apply to join your member circle";
+"1015" = "Apply to join the member circle";
+"1016" = "The members have joined %@";
+"1017" = "You have joined the circle members";
+"1018" = "Launched a remote emergency";
+"1019" = "Launched a emergency";
+"1020" = "The phone number is wrong";
+"1021" = "The phone number is registered, please login.";
+"1022" = "The account you entered is incorrect.Please register for an account.";
+"1023" = "The picture does not exist";
+"1024" = "You add user has not been registered";
+"1025" = "You have been removed the circle members";
+"1026" = "The message does not exist";
+"1027" = "The user is not the primary account";
+"1028" = "Sorry, you have no circle members";
+"1029" = "Dissolution the circle members";
+"1030" = "Couldn't find this user";
+"1031" = "Pang dou customer service";
+"1032" = "The user information is incorrect";
+"1033" = "The parameter type is wrong";
+"1034" = "Welcome to use d5Home";
+"1035" = "Sharing message, photo album, location information and use records among family members, and a key SOS emergency rescue";
+"1036" = "The SOS record does not exist";
+"1037" = "Failed to upload file.The file format is not correct!";
+"1038" = "Failed to upload file.";
+"1039" = "Modify the name of device[%@] to [%@]";
+"1040" = "operation failure";
+"1041" = "The two password is different";
+"1042" = "The user account or the primary error";
+"1043" = "Quite the circle members";
+"1044" = "Launched a instant positioning to %@";
+"1045" = "The current position";
+"1046" = "SMS verification code is not correct";
+"1047" = "Verification code has been expired ,please get it again.";
+"1048" = "The account is not registered, please get verification code login";
+"1049" = "The password is wrong";
+"1050" = "Launched a remote dial back to %@";
+"1051" = "This user has closed automatic callback function, please try again later";
+"1052" = "Launched a remote emergency call  to %@";
+"1053" = "This user has closed emergency call function, please try again later";
+"1054" = "Send failed, please try again after 60 seconds";
+"1055" = "The message has been sent to your mobile phone";
+"1056" = "Agree with your invitation";
+"1057" = "Refuse your invitation";
+"1058" = "SMS verification code information does not exist";
+"1059" = "Database error";
+"1060" = "You have been removed the circle members";
+"1061" = "add to your group";
+"1062" = "Your account has been in the other device or application login.";
+"1063" = "The device is not available.";
+"1064" = "The Verification code is wrong";
+"1065" = "The members have joined %@";
+"1066" = "";
+"-111" = "Operate failed";
+"Author_error_phone_model" = "Your account has been logged in %@, please log in again";
+"Author_error_no_phone_model" = "Your account has been logged in other phone,please log in agin";

@@ -1,0 +1,237 @@
+//
+//  D5SpecialController.m
+//  D5LedLightSystem
+//
+//  Created by LGZwr on 16/9/12.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5SpecialController.h"
+#import "D5LGZSpecialCell.h"
+#import "MJExtension.h"
+#import "D5SpecialConfigModel.h"
+#import "D5MusicStateModel.h"
+#import "D5EffectsModel.h"
+#import "D5MusicStateConfigModel.h"
+#import "D5RuntimeShareInstance.h"
+#import "D5RuntimeMusic.h"
+#import "D5RuntimeEffects.h"
+
+@interface D5SpecialController () <UITableViewDataSource, UITableViewDelegate, D5LedNetWorkErrorDelegate, D5LedCmdDelegate>
+
+/** 特效数组 */
+@property (nonatomic, strong) NSArray *specialsArray;
+
+@property (weak, nonatomic) IBOutlet UITableView *specialTableView;
+
+/** 选中行 */
+@property (nonatomic, strong) NSIndexPath *index;
+
+@end
+
+@implementation D5SpecialController
+
+#pragma mark - <MyDelegate>
+- (void)d5NetWorkError:(D5SocketErrorCodeType)errorType errorMessage:(NSString *)errorMesssage data:(NSDictionary *)data forHeader:(LedHeader *)header
+{
+    @autoreleasepool {
+        if (errorType == D5SocketErrorCodeTypeTimeOut) {
+            //DLog(@"获取特效库超时:%d->%d",header->cmd,header->subCmd);
+        } else if (errorType == D5SocketErrorCodeTypeTCPSendDataFailed) {
+       
+        } else if (errorType == D5SocketErrorCodeTypeLedNotAdd || errorType == D5SocketErrorCodeTypeLedDisconnect) {
+//            [self checkLedOff];
+        }
+        
+    }
+}
+
+- (void)ledCmdReceivedData:(LedHeader *)header withData:(NSDictionary *)dict
+{
+   
+        if (header->cmd == Cmd_Media_Operate && header->subCmd == SubCmd_Effects_Play) {
+            int code = [dict[LED_STR_CODE] intValue];
+            if (code != LedCodeSuccess) {
+                 dispatch_async(dispatch_get_main_queue(), ^{
+                     [MBProgressHUD showMessage:@"请开灯或检查灯是否正确安装" toView:self.view];
+                     [self runTimeSlectedEffect];
+                 });
+
+
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+
+                    [self runTimeSlectedEffect];
+                });
+
+            }
+            
+            
+        } else if (header->cmd == Cmd_Media_Operate && header->subCmd == SubCmd_Effects_List) {
+            NSDictionary *data = dict[LED_STR_DATA];
+            NSArray *effectsArray = data[LED_STR_EFFECTSLIST];
+            self.specialsArray = [D5EffectsModel mj_objectArrayWithKeyValuesArray:effectsArray];
+            dispatch_async(dispatch_get_main_queue(), ^{
+
+            [self runTimeSlectedEffect];
+            });
+//            [self.specialTableView reloadData];
+            
+        }
+}
+
+
+
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateSpecial) name:@"ClickSpecial" object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runTimeSlectedEffect) name:Runtime_Info_Update object:nil];
+    
+    [self runTimeSlectedEffect];
+    
+    [self updateSpecial];
+    
+
+}
+
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)runTimeSlectedEffect
+{
+    D5RuntimeShareInstance *instance = [D5RuntimeShareInstance sharedInstance];
+    
+    __weak  typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        typeof(weakSelf) strongSelf = weakSelf;
+        
+        [strongSelf.specialTableView reloadData];
+        if (instance.colorMode != Color_Effects || instance.effects.playStatus == Stop || instance.effects.playStatus == Pause ) { // 场景模式--将特效界面更新为未播放
+                for (D5EffectsModel *effect in strongSelf.specialsArray) {
+                    if (effect.effectID == instance.effects.effectId) {
+                        NSUInteger currentIndex = [strongSelf.specialsArray indexOfObject:effect];
+                        strongSelf.index = [NSIndexPath indexPathForRow:currentIndex inSection:0];
+                    }
+                }
+                D5LGZSpecialCell *cell = [strongSelf.specialTableView cellForRowAtIndexPath:strongSelf.index];
+                cell.selected = NO;
+                [strongSelf.specialTableView deselectRowAtIndexPath:strongSelf.index animated:NO];
+                cell.configPlayBtn.selected = NO;
+        } else if (instance.effects.playStatus == Play) {
+            if (strongSelf.specialsArray.count > 0) {
+                for (D5EffectsModel *effect in strongSelf.specialsArray) {
+        
+                    if (effect.serverId == instance.effects.serverId) {
+                        NSUInteger currentIndex = [strongSelf.specialsArray indexOfObject:effect];
+                        
+                        strongSelf.index = [NSIndexPath indexPathForRow:currentIndex inSection:0];
+                    
+                        D5LGZSpecialCell *cell = [strongSelf.specialTableView cellForRowAtIndexPath:strongSelf.index];
+                        cell.selected = YES;
+                        cell.configPlayBtn.selected = YES;
+                        [strongSelf.specialTableView selectRowAtIndexPath:strongSelf.index animated:NO scrollPosition:UITableViewScrollPositionNone];
+                    }
+                }
+            }
+        }
+    });
+
+}
+
+- (void)updateSpecial{
+    D5LedNormalCmd *musicConfigEffectList = [[D5LedNormalCmd alloc] init];
+    musicConfigEffectList.strDestMac = [D5CurrentBox currentBoxMac];
+    musicConfigEffectList.remoteLocalTag = tag_remote;
+    musicConfigEffectList.remotePort = [D5CurrentBox currentBoxTCPPort];
+    musicConfigEffectList.remoteIp = [D5CurrentBox currentBoxIP];
+    musicConfigEffectList.errorDelegate = self;
+    musicConfigEffectList.receiveDelegate = self;
+    
+    [musicConfigEffectList ledSendData:Cmd_Media_Operate withSubCmd:SubCmd_Effects_List];
+
+}
+
+
+#pragma mark - <UITableViewDelegate, UITableViewDataSource>
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.specialsArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    D5LGZSpecialCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LGZSpecialCell"];
+    
+    cell.configPlayBtn.selected = NO;
+    cell.selected = NO;
+    
+    if (self.specialsArray && self.specialsArray.count > 0){
+    
+        D5EffectsModel *model = self.specialsArray[indexPath.row];
+        cell.specialConfig = model;
+        
+        D5LedNormalCmd *configPlay = [[D5LedNormalCmd alloc] init];
+        configPlay.strDestMac = [D5CurrentBox currentBoxMac];
+        configPlay.remoteLocalTag = tag_remote;
+        configPlay.remotePort = [D5CurrentBox currentBoxTCPPort];
+        configPlay.remoteIp = [D5CurrentBox currentBoxIP];
+        configPlay.errorDelegate = self;
+        configPlay.receiveDelegate = self;
+        // 播放特效
+        [cell setPlaySpecialBlock:^{
+            [MobClick event:UM_EFFECT attributes:@{@"effectid" : [NSString stringWithFormat:@"%d",model.serverId]}];
+            D5EffectsModel *model = self.specialsArray[indexPath.row];
+
+            NSDictionary *dict = @{
+                                   LED_STR_TYPE : @(EffectPlay),
+                                   LED_STR_EFFECTID : @(model.effectID)
+                                   };
+
+            [configPlay ledSendData:Cmd_Media_Operate withSubCmd:SubCmd_Effects_Play withData:dict];
+        }];
+        // 暂停特效
+        [cell setPauseSpecialBlock:^{
+            D5EffectsModel *model = self.specialsArray[indexPath.row];
+
+            NSDictionary *dict = @{
+                                   LED_STR_TYPE : @(EffectStop),
+                                   LED_STR_EFFECTID : @(model.effectID)
+                                   };
+
+            [configPlay ledSendData:Cmd_Media_Operate withSubCmd:SubCmd_Effects_Play withData:dict];
+        }];
+    }
+    return cell;
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 52;
+}
+
+- (BOOL)checkLedOff {
+    @autoreleasepool {
+        LedOnOffStatus status = [D5RuntimeShareInstance sharedInstance].lampStatus;
+        
+        if (![D5LedList sharedInstance].addedLedList || [D5LedList sharedInstance].addedLedList.count <= 0) {
+            [MBProgressHUD showMessage:@"请在 “设置-灯组管理”中添加新灯" toView:self.view];
+            return YES;
+        }
+
+        if (status != LedOnOffStatusOn) { // 如果灯关闭
+            [MBProgressHUD showMessage:@"请开灯或检查灯是否正确安装" toView:self.view];
+            return YES;
+        }
+        return NO;
+    }
+}
+
+@end

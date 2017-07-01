@@ -1,0 +1,265 @@
+//
+//  D5LedLightSystem.pch
+//  D5LedLightSystem
+//
+//  Created by 黄斌 on 15/12/15.
+//  Copyright © 2015年 com.pangdou.d5home. All rights reserved.
+//
+
+#import <Availability.h>
+
+#ifdef DEBUG
+#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
+#else
+#define DLog(...)
+#endif
+
+
+
+
+#ifndef __IPHONE_5_0
+#warning "This project uses features only available in iOS SDK 5.0 and later."
+#endif
+
+#pragma mark - 字体
+#define FONT_NAME @"HelveticaNeue-Light"
+
+#pragma mark - 图片
+#define BACK_IMAGE [UIImage imageNamed:@"connect_back"]
+
+#pragma mark - 颜色
+
+#define WHITE_COLOR [UIColor whiteColor]
+#define MUSIC_CELL_BLACk COLOR(26/255.f, 26/255.f, 26/255.f, 1.0)//深黑
+#define MUSIC_CELL_LOWBLACk  COLOR(37/255.f, 37/255.f, 37/255.f, 1.0)//浅黑
+#define NAV_BACK_COLOR COLOR(18/255.f, 18/255.f, 18/255.f, 1.0)//导航栏颜色
+#define BTN_BACK_COLOR COLOR(75/255.f, 76/255.f, 77/255.f, 1.0)//button浅颜色
+#define BTN_GRAY_COLOR COLOR(76/255.f, 76/255.f, 76/255.f, 1.0)//灰色底色
+#define BTN_BACK_TITLE_COLOR COLOR(64/255.f, 64/255.f, 64/255.f, 1.0)//button浅颜色时文字颜色
+#define BTN_YELLOW_COLOR COLOR(255/255.f, 212/255.f, 0/255.f, 1.0)//button黄颜色
+#pragma mark - 尺寸
+#define MainScreenHeight [UIScreen mainScreen].bounds.size.height
+#define MainScreenWidth [UIScreen mainScreen].bounds.size.width
+
+#pragma mark - 灯组管理灯的图片和颜色
+
+#define LIGHT_STATUS_ON_RED [UIImage imageNamed:@"light_group_red"]
+#define LIGHT_STATUS_ON_ORANCE [UIImage imageNamed:@"light_group_orange"]
+#define LIGHT_STATUS_ON_YELLOW [UIImage imageNamed:@"light_group_yellow"]
+#define LIGHT_STATUS_ON_GREEN [UIImage imageNamed:@"light_group_green"]
+#define LIGHT_STATUS_ON_BLUE [UIImage imageNamed:@"light_group_blue"]
+#define LIGHT_STATUS_ON_PURPLE [UIImage imageNamed:@"light_group_purple"]
+
+#define LIGHT_STATUS_ON_IMAGE [UIImage imageNamed:@"light_group_on"]
+#define LIGHT_STATUS_OFF_IMAGE [UIImage imageNamed:@"light_group_off"]
+#define LIGHT_STATUS_OFFLINE_IMAGE [UIImage imageNamed:@"light_offline"]
+
+#define LIGHT_STATUS_RED [UIColor colorWithRed:1 green:(2.0f/255.0f) blue:0 alpha:1]
+#define LIGHT_STATUS_ORANGE [UIColor colorWithRed:(253.0f/255.0f) green:(134.0f/255.0f) blue:0 alpha:1]
+#define LIGHT_STATUS_YELLOW [UIColor colorWithRed:(254.0f/255.0f) green:(243.0f/255.0f) blue:0 alpha:1]
+#define LIGHT_STATUS_GREEN [UIColor colorWithRed:(103.0f/255.0f) green:(226.0f/255.0f) blue:(55.0f/255.0f) alpha:1]
+#define LIGHT_STATUS_BLUE [UIColor colorWithRed:(0.0f/255.0f) green:(183.0f/255.0f) blue:(238.0f/255.0f) alpha:1]
+#define LIGHT_STATUS_PURPLE [UIColor colorWithRed:(147.0f/255.0f) green:(1.0f/255.0f) blue:(225.0f/255.0f) alpha:1]
+
+#define LIGHT_STATUS_OFF [UIColor colorWithRed:(82.0f/255.0f) green:(82.0f/255.0f) blue:(82.0f/255.0f) alpha:1]
+#define LIGHT_STATUS_OFFLINE [UIColor colorWithRed:(82.0f/255.0f) green:(82.0f/255.0f) blue:(82.0f/255.0f) alpha:1]
+
+#pragma mark - 头文件
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <SystemConfiguration/SystemConfiguration.h>
+#import <MobileCoreServices/MobileCoreServices.h>
+#import <QuartzCore/QuartzCore.h>
+#import "NSString+Helper.h"
+#import "MBProgressHUD.h"
+#import "MBProgressHUD+NJ.h"
+#import "UIColor+Help.h"
+#import "UIButton+FillColor.h"
+#import "UIImageView+Helper.h"
+#import "NSURL+D5Extension.h"
+
+#import "UIView+Extension.h"
+
+#import "NSMutableArray+Helper.h"
+
+#import "D5LedNormalCmd.h"
+#import "D5LedSpecialCmd.h"
+#import "D5LedCmds.h"
+#import "D5BaseViewController.h"
+#import "D5NetWork.h"
+#import "Utils.h"
+#import "iToast.h"
+#import "Reachability.h"
+#import "D5LedZKTList.h"
+#import "D5Protocol.h"
+#import "D5CurrentBox.h"
+#import "D5Date.h"
+#import "UIImage+LGZExtension.h"
+#import "UIControl+D5IntervalOperation.h"
+#import "NSData+Helper.h"
+#import "UIButton+EnlargeEdge.h"
+#import "D5LedSocket.h"
+#import "D5ManualMode.h"
+#import "D5ToastViewController.h"
+#import <UMMobClick/MobClick.h>
+#import "D5WarningViewController.h"
+#import "CALayer+PauseAimate.h"
+
+#pragma mark - 友盟添加歌曲方式
+typedef enum _add_music_type {
+    UMAddMusicTypeDownload = 1,
+    UMAddMusicTypePhone,
+    UMAddMusicTypeMac,
+    UMAddMusicTypeUSB
+}UMAddMusicType;
+
+#pragma mark - 当前APP设置的语言
+#define CURRENT_APP_LANGUAGE [[[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] objectAtIndex:0]
+
+#pragma mark - 更新app的地址
+#define APPLE_STORE_ID  @"1164001777"
+#define APP_UPDATE_URL(appID) [NSString stringWithFormatter:@"itms-apps://ax.itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=", appID]
+#define CHECK_APP_UPDATE_URL(appID) [NSString stringWithFormat:@"http://itunes.apple.com/lookup?id=%@", appID]
+
+#pragma mark - 文字本地化
+#define CustomLocalizedString(key, comment) [[NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%@",CURRENT_APP_LANGUAGE] ofType:@"lproj"]] localizedStringForKey:(key) value:@"" table:nil]
+#define CustomLocalizedStringFromTable(key, tbl, comment) [[NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%@", CURRENT_APP_LANGUAGE] ofType:@"lproj"]] localizedStringForKey:(key) value:@"" table:(tbl)]
+
+#pragma mark - storyboard文件名
+#define MUSICLIBRARY_STORYBOARD_ID @"MusicLibrary"
+#define SPECIALLIBRARY_STORYBOARD_ID @"SpecialLibrary"
+#define MODEL_STORYBOARD_ID @"Model"
+#define MAIN_STORYBOARD_ID @"Main"
+#define ZKTSOFTWARE_STORYBOARD_ID @"ZKTSoftware"
+#define MANUAL_STORYBOARD_ID @"Manual"
+#define LIGHTGROUP_STORYBOARD_ID @"LightGroup"
+#define WELCOME_STORYBOARD_ID @"Welcome"
+#define LOADING_STORYBOARD_ID @"Loading"
+#define ALARMSETTING_STORYBOARD_ID @"AlarmSetting"
+#define MULTILIGHTFOLLOW_STORYBOARD_ID @"MultiLightFollow"
+
+#define STORYBOAD_MUSICLIBRARY [UIStoryboard storyboardWithName:MUSICLIBRARY_STORYBOARD_ID bundle:nil]
+
+#define IMAGEWITHSTRING(a) [[UIImageView alloc]initWithImage:a]
+#define IMAGE(a) [UIImage imageNamed:a]
+#define COLOR(r,g,b,a) [UIColor colorWithRed:r green:g blue:b alpha:a]
+
+#pragma mark - NSUserDefaults的变量key
+#define HAS_SEARCHED_BOX  @"has_searched_box"
+
+#pragma mark - 全局变量key
+#define CURRENT_LOGIN_BOX   @"current_login_box"
+#define CMD_SERIALNUMBER    @"cmd_serial_number"    //LedHeader里面sn存在userDefaults的key
+#define SELECTED_ZKT_KEY @"selected_zkt"
+#define LIGHTGROUP_SET_NO @"lightgroup_set_no"
+#define NETWORK_TYPE @"network_type"
+#define SETBOXINFO @"set_box_info"
+
+#define TCP_CONNECT_SUCCESS @"tcp_connect_success"
+#define TCP_CONNECT_FAILED  @"tcp_connect_failed"
+#define TCP_DISCONNET       @"tcp_disconenct"
+#define TCP_DISCONNET_MANNGER       @"tcp_disconenct_mannger"
+
+
+#define CHEKC_ALL_UPDATE    @"check_all_update"
+#define LOGIN_SUCCESS       @"login_success"
+
+#define HEART_TIMEOUT_DISCONNECT @"heart_timeout_disconnect"
+#define MANUAL_DISCONNECT       @"manual_disconnect"
+
+#define PUSH_CMD_RECEIVE        @"push_cmd_receive"
+
+#pragma mark - 友盟统计事件IDkey
+#define UM_ADD_DEVICE           @"add_device"
+#define UM_SEARCH_LAMP_TIME     @"search_lamp_time"
+#define UM_ADD_LAMP             @"add_lamp"
+#define UM_FIRST_LAMP_COUNT     @"first_lamp_count"
+#define UM_ADD_MUSIC_TYPE       @"add_music_type"
+#define UM_WHEEL_COLOR          @"wheel_color"
+#define UM_FAVOR_EFFECT         @"favor_effect"
+#define UM_BRIGHTNESS           @"brightness"
+#define UM_SCENE                @"scene"
+#define UM_EFFECT               @"effect"
+#define UM_DEVICE_FOLLOW        @"device_follow"
+#define UM_MANUAL               @"manual"
+
+#pragma mark - 通知名
+#define NETWORK_STATUS_CHANGED @"network_status_changed"
+#define REFRESH_MUSIC_LIST  @"refresh_music_list"
+
+#define Runtime_Info_Update @"runtimeInfoUpdate"
+#define SD_USB_Refresh @"TFRefresh"
+//#define CHECK_UPDATE_FINISH @"check_update_finish"
+#define IS_CLICK_CANCEL_UPDATE @"is_click_cancel_update"
+#define UPDATE_BOX_SUCCESS  @"update_box_success"
+
+#pragma mark - 根据域名获取的IP KEY
+#define IP_ADDRESS_FROM_HOSTNAME @"ip_address_from_%@"
+
+#define CUSTOMLOCAL_STRING_D5PROTOCOL(string) CustomLocalizedStringFromTable(string, @"D5Protocol", nil)
+//#define HJPhoneDEBUG
+
+#pragma mark - URL地址
+#define USE_GUIDE_URL @"http://help.ipangdou.com/led/"
+#define ADD_BOX_HELP_URL @"http://help.ipangdou.com/led/help_zk.php"
+#define ADD_LED_HELP_URL @"http://help.ipangdou.com/led/help_deng.php"
+
+#define SERVER_QQ_NUM  @"2173769403"
+#define SERVER_TEL_NUM @"028-83396905"
+
+#pragma mark - 运行环境
+
+#define POST_PRODUCTION
+//#define POST_TEST
+//#define AIRLINE_INSTALL
+
+#ifdef POST_TEST
+#define D5NEW_LEDBASEURL               @"http://ledapi.d5home.com/index.php/api/default"//后台接口
+#endif
+
+#ifdef POST_PRODUCTION
+#define D5NEW_LEDBASEURL               @"http://ledapi.ipangdou.com/index.php/api/default"//后台接口
+#endif
+
+#ifdef AIRLINE_INSTALL
+#define D5NEW_LEDBASEURL              @"http://ledapi.d5home.com/index.php/api/default"//后台接口
+#endif
+
+//关键字搜索音乐
+#define D5LED_SEARCH_MUSIC @"search_music"
+//app点赞音乐和配置
+#define D5LED_ADD_LIKE @"add_like"
+//app获取某一首歌的详情
+#define D5LED_GET_MUSIC_BASIC @"get_music_basic/mid"
+//app获取某一个分类下的所有歌曲
+#define D5LED_GET_CLASSIFY_MUSIC @"get_classify_music"
+//app获取热门信息
+#define D5LED_GET_HOT @"get_hot"
+//app获取音乐分类列表
+#define  D5LED_GET_ClASSIFY_LIST @"get_classify"
+//app 获取推荐歌曲列表
+#define D5LED_GET_RECOMMEND_MUSIC @"get_recommend_music"
+
+#pragma mark - 推送
+#define ADDED_NEW_BOX @"added_new_box"
+
+#pragma  mark --第三方 KEY
+#define UMKEY @"580de44a7f2c747e93000465"
+
+#define BUGLY_APPKEY    @"f26e0cb6-338b-4b2d-ab8c-f497f00d3ec6"
+#define BUGLY_APPID     @"ee8975b2fb"
+
+//#define CUSTOMLOCAL_STRING_REFRESH(string) CustomLocalizedStringFromTable(string, @"Localizable_refresh", nil)
+
+
+typedef enum _ADD_MUSIC_LIST_CATEGORY
+{
+    ADD_MUSIC_LIST_RECOMMOND=1,//推荐
+    ADD_MUSIC_LIST_LAGUAGE=2,//语种
+    ADD_MUSIC_LIST_STYLE=3,//风格
+    
+}ADD_MUSIC_LIST_CATEGORY;
+
+
+#endif/*D5LedLightSystem_pch */

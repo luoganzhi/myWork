@@ -1,0 +1,25 @@
+//
+//  D5ChangeNameViewController.h
+//  D5LedLightSystem
+//
+//  Created by LGZwr on 16/9/5.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5BaseViewController.h"
+
+@protocol D5ChangeNameViewControllerDelegate <NSObject>
+
+- (void)finishChangeName:(NSString *)name;
+
+@end
+
+@interface D5ChangeNameViewController : D5BaseViewController
+
+@property (nonatomic, weak) id<D5ChangeNameViewControllerDelegate> delegate;
+
+/** name */
+@property (nonatomic, copy) NSString *name;
+
+
+@end

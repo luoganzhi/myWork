@@ -1,0 +1,41 @@
+//
+//  D5MusicCategoryPopView.h
+//  D5LedLightSystem
+//
+//  Created by 黄金 on 16/9/7.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+typedef void (^SelectedMusicCategoryList) (NSString*musicClassfyName,NSString*musicClassfyID);
+
+typedef void (^DelteView) ();
+
+@interface D5MusicCategoryPopView : UIView
+
+@property(nonatomic,copy)SelectedMusicCategoryList selectedMusicCategoryList;
+@property(nonatomic,copy)DelteView removeViewBlock;
+-(void)setDataList:(NSArray*)dataArrayList selctedCategory:(NSString*)name;
+-(void)removeView;
+-(void)hidenView:(BOOL)isHiden;
+
+
+@end
+
+
+
+
+typedef void (^TouchCategoryRow)(NSInteger row);
+@interface D5MusicCategoryPopViewCell : UICollectionViewCell
+@property(nonatomic,copy)TouchCategoryRow touchCategory;
+@property(nonatomic,assign)NSInteger row;
+@property(nonatomic,strong)UIButton*title;
+
+
+
+
+@end
+@interface D5MusicCategoryPopViewFootView : UICollectionReusableView
+
+@end

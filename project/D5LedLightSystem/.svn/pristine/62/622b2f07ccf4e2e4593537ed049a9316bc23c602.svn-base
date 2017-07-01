@@ -1,0 +1,161 @@
+//
+//  D5AboutUsController.m
+//  D5LedLightSystem
+//
+//  Created by LGZwr on 2016/10/8.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5AboutUsController.h"
+#import "D5CheckUpdate.h"
+
+@interface D5AboutUsController()
+
+@property (weak, nonatomic) IBOutlet UILabel *appVersionLabel;
+@property (weak, nonatomic) IBOutlet UIButton *updateButton;
+
+
+@property (weak, nonatomic) IBOutlet UIImageView *settingIconImage;
+@property (weak, nonatomic) IBOutlet UIView *upgradeView;
+@property (weak, nonatomic) IBOutlet UILabel *upgradeTipLabel;
+
+@property (weak, nonatomic) IBOutlet UIButton *btnPhone;
+@property (weak, nonatomic) IBOutlet UIButton *btnQQ;
+- (IBAction)btnPhoneClicked:(UIButton *)sender;
+- (IBAction)btnQQClicked:(UIButton *)sender;
+@property (weak, nonatomic) IBOutlet UILabel *latestVerTipLabel;
+
+@end
+
+@implementation D5AboutUsController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.title  = @"关于我们";
+    
+    [self addLeftBarItem];
+    
+    self.updateButton.hidden = YES;
+    self.settingIconImage.hidden = YES;
+    
+    self.latestVerTipLabel.hidden = YES;
+    
+    [self isNeedUpdate];
+    [self setAppVersion];
+}
+
+- (void)setAppVersion {
+    @autoreleasepool {
+        NSString *version = [[D5CheckUpdate sharedInstance] appVersionText];
+        _appVersionLabel.text = [NSString stringWithFormat:@"V %@", version];
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)checkAppFinish:(NSNotification *)notification {
+    @autoreleasepool {
+        NSDictionary *dict = notification.userInfo;
+        if (dict) {
+            BOOL isNeed = [dict[CHECK_UPDATE_ISNEED] boolValue];
+            if (isNeed) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self setUpdateData];
+                });
+            }
+        }
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+    }
+}
+
+- (void)setUpdateData {
+    @autoreleasepool {
+        D5UpdateModel *appUpdate = [D5CheckUpdate sharedInstance].appUpdate;
+        BOOL isNeed = NO;
+        if (appUpdate) {
+            isNeed = appUpdate.isNeedUpdate;
+        }
+        
+        if (!isNeed) {
+            self.latestVerTipLabel.hidden = NO;
+            return;
+        }
+        
+        self.updateButton.hidden = NO;
+        self.settingIconImage.hidden = NO;
+        self.latestVerTipLabel.hidden = YES;
+        
+        NSString *tipStr = [NSString stringWithFormat:@"%@", appUpdate.updateTip];
+        NSString *str = [tipStr stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
+        
+        _upgradeTipLabel.text = str;
+    }
+}
+
+- (void)isNeedUpdate {
+    @autoreleasepool {
+        if ([D5CheckUpdate sharedInstance].appStatus == CheckUpdateStatusIng) {
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkAppFinish:) name:CHECK_UPDATE_APP_FINISH_PUSH_NAME object:nil];
+        } else {
+            [self setUpdateData];
+        }
+    }
+}
+
+- (void)addLeftBarItem {
+    [D5BarItem setLeftBarItemWithImage:BACK_IMAGE target:self action:@selector(back)];
+}
+
+- (void)back {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+- (IBAction)appUpdateBtnClick:(id)sender {
+    self.upgradeView.hidden = !self.upgradeView.hidden;
+}
+
+// 升级按钮点击
+- (IBAction)updateBtnClick:(id)sender {
+    self.upgradeView.hidden = YES;
+    
+    NSString *url = APP_UPDATE_URL(APPLE_STORE_ID);
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
+}
+- (IBAction)notUpdateBtnClick:(id)sender {
+    self.upgradeView.hidden = YES;
+}
+
+#pragma mark - 点击事件
+- (IBAction)btnPhoneClicked:(UIButton *)sender {
+    @autoreleasepool {
+        NSString *tel = [NSString stringWithFormat:@"tel:%@", SERVER_TEL_NUM];
+        
+        NSURL *url = [NSURL URLWithString:tel];
+        if ([[UIApplication sharedApplication] canOpenURL:url]) {
+            [[UIApplication sharedApplication] openURL:url];
+        }
+    }
+}
+
+- (IBAction)btnQQClicked:(UIButton *)sender {
+    @autoreleasepool {
+        //qqNumber就是你要打开的QQ号码， 也就是你的客服号码。
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"mqq://im/chat?chat_type=wpa&uin=%@&version=1&src_type=web", SERVER_QQ_NUM]];
+        if ([[UIApplication sharedApplication] canOpenURL:url]) {
+            UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
+            
+            NSURLRequest *request = [NSURLRequest requestWithURL:url];
+            //            webView.delegate = self;
+            [webView loadRequest:request];
+            [self.view addSubview:webView];
+        }else{
+            [MBProgressHUD showMessage:@"对不起，您还没安装QQ"];
+        }
+    }
+}
+@end

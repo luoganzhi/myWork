@@ -1,0 +1,296 @@
+//
+//  D5CheckUpdate.m
+//  D5LedLightSystem
+//
+//  Created by zhangyu on 2016/11/25.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5CheckUpdate.h"
+#import "D5Protocol.h"
+
+static D5CheckUpdate *instance = nil;
+
+@interface D5CheckUpdate()
+
+@property (nonatomic, copy) NSString *appUpdateURL;
+
+@end
+
+@implementation D5CheckUpdate
+
++ (D5CheckUpdate *)sharedInstance {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[D5CheckUpdate alloc] init];
+    });
+    return instance;
+}
+
+/**
+ 获取当前APP版本号--buildID
+ 
+ @return
+ */
+- (int)appVersionBuildID {
+    @autoreleasepool {
+        NSString *appIDBuildStr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+        
+        int appIdInt = [appIDBuildStr intValue];
+        return appIdInt;
+    }
+}
+
+/**
+ 返回app版本号
+ 
+ @return
+ */
+- (NSString *)appVersionText {
+    @autoreleasepool {
+        NSString *versionStr =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+        return versionStr;
+    }
+}
+
+/**
+ 检查单个更新
+ 用当前版本号version去检测是否有更新
+ 
+ @param type 检查类型
+ @param version 当前版本号
+ */
+- (void)checkUpdate:(CheckUpdateType)type currentVersion:(int)version {
+    @autoreleasepool {
+        int appVer = 0;
+        int boxVer = 0;
+        int blueToothVer = 0;
+        
+        switch (type) {
+            case CheckUpdateTypeAPP:
+                appVer = version;
+                break;
+                
+            case CheckUpdateTypeBox:
+                boxVer = version;
+                break;
+                
+            case CheckUpdateTypeBlueTooth:
+                blueToothVer = version;
+                break;
+                
+            default:
+                break;
+        }
+        
+        [self checkUpdate:type appVersion:appVer boxVersion:boxVer blueToothVerion:blueToothVer];
+    }
+}
+
+/**
+ 根据版本号检查APP是否需要更新
+
+ @param version
+ */
+- (void)checkAppUpdateFromServer:(int)version {
+    _appUpdate = nil;
+    [self checkUpdate:CheckUpdateTypeAPP currentVersion:version];
+}
+
+/**
+ 根据版本号检查中控是否需要更新
+ 
+ @param version
+ */
+- (void)checkBoxUpdate:(int)version {
+    _boxUpdate = nil;
+    _boxStatus = CheckUpdateStatusIng;
+    [self checkUpdate:CheckUpdateTypeBox currentVersion:version];
+}
+
+/**
+ 根据版本号检查蓝牙灯是否需要更新
+ 
+ @param version
+ */
+- (void)checkBlueToothUpdate:(int)version {
+    _bluetoothUpdate = nil;
+    _btStatus = CheckUpdateStatusIng;
+    
+    [self checkUpdate:CheckUpdateTypeBlueTooth currentVersion:version];
+}
+
+- (NSDictionary *)dictWithType:(CheckUpdateType)type isNeedUpdate:(BOOL)isNeed updateDict:(NSDictionary *)dict {
+    @autoreleasepool {
+        NSMutableDictionary *mutableDict = [NSMutableDictionary dictionaryWithDictionary:dict];
+        if (!mutableDict) {
+            mutableDict = [[NSMutableDictionary alloc] init];
+        }
+        
+        mutableDict[CHECK_UPDATE_TYPE] = @(type);
+        mutableDict[CHECK_UPDATE_ISNEED] = @(isNeed);
+        
+        DLog(@"更新后：%@", mutableDict);
+        return [NSDictionary dictionaryWithDictionary:mutableDict];
+    }
+}
+
+/**
+ 检查更新完成，发出通知
+ 
+ @param 通知名（app/box/bt）
+ */
+- (void)pushNotificationWithType:(CheckUpdateType)type isNeed:(BOOL)isNeed {
+    @autoreleasepool {
+        NSString *name = nil;
+        switch (type) {
+            case CheckUpdateTypeAPP:
+                name = CHECK_UPDATE_APP_FINISH_PUSH_NAME;
+                _appStatus = CheckUpdateStatusFinish;
+
+                break;
+            case CheckUpdateTypeBox:
+                name = CHECK_UPDATE_BOX_FINISH_PUSH_NAME;
+                _boxStatus = CheckUpdateStatusFinish;
+                
+                break;
+            case CheckUpdateTypeBlueTooth:
+                name = CHECK_UPDATE_BT_FINISH_PUSH_NAME;
+                _btStatus = CheckUpdateStatusFinish;
+                
+                break;
+                
+            default:
+                break;
+        }
+        
+        if ([NSString isValidateString:name]) {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                DLog(@"检查更新完成，发送通知 -- %@ - %d", name, isNeed);
+                [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:@{CHECK_UPDATE_ISNEED : @(isNeed)}];
+            });
+        }
+    }
+}
+
+- (void)checkUpdate:(CheckUpdateType)type appVersion:(int)appVer boxVersion:(int)boxVer blueToothVerion:(int)blueToothVer {
+    @autoreleasepool {
+        if (type == CheckUpdateTypeAll) {
+            _appUpdate = nil;
+            _boxUpdate = nil;
+            _bluetoothUpdate = nil;
+            
+            _btStatus = CheckUpdateStatusIng;
+            _appStatus = CheckUpdateStatusIng;
+            _boxStatus = CheckUpdateStatusIng;
+        }
+        
+        D5Protocol *d5 = [[D5Protocol alloc] init];
+        [d5 setFinishBlock:^(NSDictionary *response) {
+            NSDictionary *data = [response objectForKey:ACTION_DATA];
+            if (!data || [data isEqual:[NSNull null]] || data.count <= 0) {
+                // 不需更新
+                [self pushNotificationWithType:type isNeed:NO];
+                return;
+            }
+            
+            switch (type) {
+                case CheckUpdateTypeBox: {
+                    NSDictionary *boxDict = data[ACTION_ZK];
+                    BOOL isNeed = NO;
+                    if (boxDict) {
+                        isNeed = YES;
+                        
+                        NSDictionary *data = [self dictWithType:type isNeedUpdate:isNeed updateDict:boxDict];
+                        _boxUpdate = [D5UpdateModel dataWithDict:data];
+                    }
+                    [self pushNotificationWithType:type isNeed:isNeed];
+                }
+                    break;
+                    
+                case CheckUpdateTypeAPP: {  // 需注意，还要在ituns里面检测更新
+                    NSDictionary *appDict = data[ACTION_APP];
+                    BOOL isNeed = NO;
+                    if (appDict) {
+                        isNeed = YES;
+                        
+                        NSMutableDictionary *mutableDict = [NSMutableDictionary dictionaryWithDictionary:appDict];
+                        if (mutableDict) {
+                            mutableDict[ACTION_URL] = _appUpdateURL;
+                        }
+                        
+                        NSDictionary *data = [self dictWithType:type isNeedUpdate:isNeed updateDict:mutableDict];
+                        _appUpdate = [D5UpdateModel dataWithDict:data];
+                    }
+                    [self pushNotificationWithType:type isNeed:isNeed];
+                }
+                    break;
+                    
+                case CheckUpdateTypeBlueTooth: {
+                    NSDictionary *btDict = data[ACTION_BT];
+                    BOOL isNeed = NO;
+                    if (btDict) {
+                        isNeed = YES;
+                        
+                        NSDictionary *data = [self dictWithType:type isNeedUpdate:isNeed updateDict:btDict];
+                        _bluetoothUpdate = [D5UpdateModel dataWithDict:data];
+                    }
+                    [self pushNotificationWithType:type isNeed:isNeed];
+                }
+                    break;
+                    
+                default:
+                    break;
+            }
+            
+        }];
+        
+        [d5 setFaildBlock:^(NSString *result) {
+            if ([NSString isValidateString:result]) {
+                DLog(@"检查更新失败 : %@", result);
+            }
+            
+            [self pushNotificationWithType:type isNeed:NO];
+        }];
+        
+        [d5 checkUpdate:type appVersion:appVer boxVersion:boxVer blueToothVersion:blueToothVer];
+    }
+}
+
+- (void)checkAppUpdate {
+    @autoreleasepool {
+        _appUpdateURL = nil;
+        _appStatus = CheckUpdateStatusIng;
+        
+        NSString *appID = APPLE_STORE_ID;
+        NSString *urlStr = CHECK_APP_UPDATE_URL(appID);
+        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+        manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/javascript", nil];
+        manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+        [manager POST:urlStr parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData){
+        } success:^(AFHTTPRequestOperation * operation,id responseobject){
+            @autoreleasepool {
+                NSDictionary *response = (NSDictionary *)responseobject;
+                NSArray *results = [response objectForKey:@"results"];
+                if (results.count <= 0) {
+                    return;
+                }
+                NSDictionary *lastVersionInfo = [results objectAtIndex:0];
+                if (lastVersionInfo.allKeys.count > 0) {
+                    NSString *version = [lastVersionInfo objectForKey:@"version"];
+                    NSString *nowVersion = [NSString stringWithFormat:@"%@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]];
+                    if (version != nil && ! [version isEqualToString:@""] && ![version isEqual:[NSNull null]] && [version compare:nowVersion] == NSOrderedDescending) {
+                        _appUpdateURL = [lastVersionInfo objectForKey:@"trackViewUrl"];
+                        [self checkAppUpdateFromServer:[self appVersionBuildID]];
+                    } else {
+                        [self pushNotificationWithType:CheckUpdateTypeAPP isNeed:NO];
+                    }
+                }
+            }
+        } failure:^(AFHTTPRequestOperation * operation,NSError * error) {
+            [self pushNotificationWithType:CheckUpdateTypeAPP isNeed:NO];
+        }];
+    }
+}
+
+@end

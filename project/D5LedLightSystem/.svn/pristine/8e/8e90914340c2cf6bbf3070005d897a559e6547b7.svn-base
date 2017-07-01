@@ -1,0 +1,25 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "e8082214-01de-4299-a075-9a4db4e96ec9++579",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "e8082214-01de-4299-a075-9a4db4e96ec9++579" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "e8082214-01de-4299-a075-9a4db4e96ec9++579" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "7D820B42-785F-4D7A-9856-5C27E1B8F5B8",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "e8082214-01de-4299-a075-9a4db4e96ec9++579" : "D5LedLightSystem\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "D5LedLightSystem",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "D5LedLightSystem.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "svn:\/\/192.168.1.231:33333",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "e8082214-01de-4299-a075-9a4db4e96ec9++579"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection"  content="telephone=no">
+    <meta  http-equiv="x-rim-auto-match" content="none">
+    <title>使用指南</title>
+</head>
+<body>
+<style>
+    body{
+        background: #161D25;
+        color: #B8B6BC;
+        font-size: 12px;
+        font: 13px/1.4 "Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi Micro Hei",sans-serif;
+    }
+    div {
+        margin-bottom: 25px;
+    }
+    div span{
+        margin-bottom: 10px;
+        font-size: 15px;
+        color: #D0D2DE;
+    }
+    div.title{
+        text-align: center;
+        color: #D0D2DE;
+    }
+    a {
+        color: #D0D2DE;
+        text-decoration: none;
+    }
+		div#footer {
+			text-align:center;
+			width: 97%;
+			color: #6D6D6D;
+		}
+</style>
+<div>
+    <span>1 如何添加中控</span>
+	<p> </p>
+	<p>1) 初次使用时连接Wi-Fi并打开蓝牙，按步骤添加中控;</p>
+    <p>2) 已经添加过中控，在设置-中控管理中可以查看中控信息或重置中控，重置后重新连接;</p>
+</div>
+<div>
+    <span>2 我买了多套设备，该如何添加中控和灯？</span>
+    <p>一个手机APP只能连接一个中控、6盏灯，所以多套设备需要在添加中控时选择一个先连接，并对相邻的6盏灯编号；完成后再换一个手机连接其他设备。</p>
+</div>
+<div>
+    <span>3 一直添加不上中控怎么办？</span>
+	<p> </p>
+	<p>1) 检查Wi-Fi密码是否输入正确;</p>
+    <p>2) 手机重连Wi-Fi，确保与中控在同一网络;</p>
+    <p>3) 路由器加密方式为WPA/WPA2模式;</p>
+		<p>4) 开启路由器的DHCP功能;</p>
+		<p>5) 关闭无线访问限制，取消黑白名单选项;</p>
+		<p>6) 将网线插入中控盒子，使用有线连接;</p>
+		<p>7) 重启路由器;</p>
+		<p>8) 将中控断电10S后重新接入电源;</p>
+</div>
+<div>
+    <span>4 如何给灯编号？</span>
+    <p>进入设置-灯组管理页面，按以下步骤操作：</p>
+	<p> </p>
+	<p>1) 将新买的灯具安装好并开灯;</p>
+    <p>2) 连接中控后，在添加新灯时等待扫描附近的灯;</p>
+    <p>3) 点击开关图标确定灯的位置，并按灯的安装位置依次从1-6编号;</p>
+	<p> </p>
+    <p>编号的规则：1和4、2和5、3和6号灯需对称。</p>
+</div>
+
+<div id="footer">
+    <p>如未解决，请联系我们</p>
+    <p><a href="tel:028-83396905">028-83396905</p>
+</div>
+
+</body>
+</html>

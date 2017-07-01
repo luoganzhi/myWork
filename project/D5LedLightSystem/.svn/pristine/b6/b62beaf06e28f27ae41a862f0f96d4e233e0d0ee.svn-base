@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2657" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11524"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="D5TipView">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6fC-Ca-7TF" userLabel="Connect Failed View">
+                    <rect key="frame" x="0.0" y="400" width="320" height="168"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Jkp-B1-bxw">
+                            <rect key="frame" x="71" y="42" width="177.5" height="32"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_up_error" translatesAutoresizingMaskIntoConstraints="NO" id="XAG-Qw-qNI">
+                                    <rect key="frame" x="0.0" y="0.0" width="50" height="32"/>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="中控已断开连接" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ctI-sE-bfX">
+                                    <rect key="frame" x="63" y="7" width="114.5" height="19.5"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                    <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="XAG-Qw-qNI" firstAttribute="leading" secondItem="Jkp-B1-bxw" secondAttribute="leading" id="0fC-KY-fle"/>
+                                <constraint firstAttribute="trailing" secondItem="ctI-sE-bfX" secondAttribute="trailing" id="8r8-d8-B4B"/>
+                                <constraint firstItem="XAG-Qw-qNI" firstAttribute="top" secondItem="Jkp-B1-bxw" secondAttribute="top" id="F9S-qX-js2"/>
+                                <constraint firstItem="ctI-sE-bfX" firstAttribute="centerY" secondItem="XAG-Qw-qNI" secondAttribute="centerY" id="WjY-x0-iWr"/>
+                                <constraint firstItem="ctI-sE-bfX" firstAttribute="leading" secondItem="XAG-Qw-qNI" secondAttribute="trailing" constant="13" id="srJ-ud-MTO"/>
+                                <constraint firstItem="XAG-Qw-qNI" firstAttribute="centerY" secondItem="Jkp-B1-bxw" secondAttribute="centerY" id="zRS-Uu-YhO"/>
+                            </constraints>
+                        </view>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fGe-fL-5xZ">
+                            <rect key="frame" x="125" y="112" width="70" height="33"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="重新连接">
+                                <color key="titleColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="btnReConnectClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="cHJ-48-4TN"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="168" id="4fM-jL-bzY"/>
+                        <constraint firstItem="Jkp-B1-bxw" firstAttribute="centerX" secondItem="6fC-Ca-7TF" secondAttribute="centerX" id="7cX-Ev-4Z8"/>
+                        <constraint firstItem="Jkp-B1-bxw" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6fC-Ca-7TF" secondAttribute="leading" id="LHw-9x-OHV"/>
+                        <constraint firstItem="fGe-fL-5xZ" firstAttribute="centerX" secondItem="6fC-Ca-7TF" secondAttribute="centerX" id="haQ-nr-z1g"/>
+                        <constraint firstItem="Jkp-B1-bxw" firstAttribute="top" secondItem="6fC-Ca-7TF" secondAttribute="top" constant="42" id="iQ9-Ax-xJ2"/>
+                        <constraint firstItem="fGe-fL-5xZ" firstAttribute="top" secondItem="Jkp-B1-bxw" secondAttribute="bottom" constant="38" id="s3y-7y-RaV"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LA3-gb-fia" userLabel="Upload Failed View">
+                    <rect key="frame" x="0.0" y="400" width="320" height="168"/>
+                    <subviews>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_up_error" translatesAutoresizingMaskIntoConstraints="NO" id="egx-Tl-KY6">
+                            <rect key="frame" x="135" y="26" width="50" height="32"/>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="歌曲上传失败" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="K88-FJ-k7m">
+                            <rect key="frame" x="108" y="85.5" width="104" height="21"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4js-KY-ska">
+                            <rect key="frame" x="125" y="117" width="70" height="33"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="重新上传">
+                                <color key="titleColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="btnReUploadClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="dT9-hC-ZFL"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="egx-Tl-KY6" firstAttribute="top" secondItem="LA3-gb-fia" secondAttribute="top" constant="26" id="11J-Tx-AnW"/>
+                        <constraint firstAttribute="height" constant="168" id="3Lx-Sj-8Ny"/>
+                        <constraint firstItem="K88-FJ-k7m" firstAttribute="centerX" secondItem="LA3-gb-fia" secondAttribute="centerX" id="93W-Yi-PLJ"/>
+                        <constraint firstAttribute="bottom" secondItem="4js-KY-ska" secondAttribute="bottom" constant="18" id="Aby-VR-j9C"/>
+                        <constraint firstItem="egx-Tl-KY6" firstAttribute="centerX" secondItem="LA3-gb-fia" secondAttribute="centerX" id="hNQ-dy-11I"/>
+                        <constraint firstItem="4js-KY-ska" firstAttribute="centerX" secondItem="LA3-gb-fia" secondAttribute="centerX" id="hjn-oF-j99"/>
+                        <constraint firstItem="K88-FJ-k7m" firstAttribute="centerY" secondItem="LA3-gb-fia" secondAttribute="centerY" multiplier="1.15" id="qTW-XA-oAd"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Jbo-7E-18u" userLabel="Upload Success View">
+                    <rect key="frame" x="0.0" y="400" width="320" height="168"/>
+                    <subviews>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_up_success" translatesAutoresizingMaskIntoConstraints="NO" id="aUe-AD-4Ek">
+                            <rect key="frame" x="135" y="26" width="50" height="32"/>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="歌曲上传成功" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vBM-bv-jyt">
+                            <rect key="frame" x="108" y="86" width="104" height="21"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="168" id="KAQ-1h-Fbf"/>
+                        <constraint firstItem="aUe-AD-4Ek" firstAttribute="centerX" secondItem="Jbo-7E-18u" secondAttribute="centerX" id="UmB-cY-cqF"/>
+                        <constraint firstItem="vBM-bv-jyt" firstAttribute="centerX" secondItem="Jbo-7E-18u" secondAttribute="centerX" id="pU4-46-3am"/>
+                        <constraint firstItem="vBM-bv-jyt" firstAttribute="centerY" secondItem="Jbo-7E-18u" secondAttribute="centerY" multiplier="1.15" id="qdp-3j-y4c"/>
+                        <constraint firstItem="aUe-AD-4Ek" firstAttribute="top" secondItem="Jbo-7E-18u" secondAttribute="top" constant="26" id="u22-Op-i9u"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MrB-UP-vcE" userLabel="Upload Ing View">
+                    <rect key="frame" x="0.0" y="400" width="320" height="168"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="he6-44-5bR">
+                            <rect key="frame" x="77" y="15" width="167" height="20"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="connect_loading" translatesAutoresizingMaskIntoConstraints="NO" id="Gck-GT-M0V">
+                                    <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="歌曲上传中 (1 / 21)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UHP-aZ-FbI">
+                                    <rect key="frame" x="33" y="1" width="134" height="19.5"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                    <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="Gck-GT-M0V" firstAttribute="top" secondItem="he6-44-5bR" secondAttribute="top" id="4Zr-8a-j1E"/>
+                                <constraint firstAttribute="trailing" secondItem="UHP-aZ-FbI" secondAttribute="trailing" id="Cej-D2-qXO"/>
+                                <constraint firstItem="UHP-aZ-FbI" firstAttribute="leading" secondItem="Gck-GT-M0V" secondAttribute="trailing" constant="13" id="HrI-lu-s5v"/>
+                                <constraint firstItem="UHP-aZ-FbI" firstAttribute="centerY" secondItem="Gck-GT-M0V" secondAttribute="centerY" id="Opr-KW-kN1"/>
+                                <constraint firstItem="Gck-GT-M0V" firstAttribute="centerY" secondItem="he6-44-5bR" secondAttribute="centerY" id="kOS-DR-z2z"/>
+                                <constraint firstItem="Gck-GT-M0V" firstAttribute="leading" secondItem="he6-44-5bR" secondAttribute="leading" id="kXf-Jz-QQv"/>
+                            </constraints>
+                        </view>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="歌曲：" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4Yh-ig-2MY">
+                            <rect key="frame" x="36" y="55" width="43" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="走马" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zCZ-im-Psy">
+                            <rect key="frame" x="79" y="55.5" width="29" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="进度：" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Qt-hO-Lpy">
+                            <rect key="frame" x="36" y="90" width="43" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20%" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wiv-Dx-IM9">
+                            <rect key="frame" x="79" y="90" width="28" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wpd-B1-IOF">
+                            <rect key="frame" x="127" y="118" width="66" height="32"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                            <state key="normal" title="取消上传">
+                                <color key="titleColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="btnCancelUploadClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="4iu-Mn-PQE"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="Wpd-B1-IOF" secondAttribute="bottom" constant="18" id="1Ek-bL-YH3"/>
+                        <constraint firstItem="wiv-Dx-IM9" firstAttribute="leading" secondItem="zCZ-im-Psy" secondAttribute="leading" id="6W9-hS-MME"/>
+                        <constraint firstAttribute="height" constant="168" id="8Xe-Z5-OUJ"/>
+                        <constraint firstItem="4Yh-ig-2MY" firstAttribute="leading" secondItem="MrB-UP-vcE" secondAttribute="leading" constant="36" id="90e-2a-hBr"/>
+                        <constraint firstItem="he6-44-5bR" firstAttribute="top" secondItem="MrB-UP-vcE" secondAttribute="top" constant="15" id="CLZ-ys-GsW"/>
+                        <constraint firstItem="Wpd-B1-IOF" firstAttribute="centerX" secondItem="MrB-UP-vcE" secondAttribute="centerX" id="HPg-WY-R9R"/>
+                        <constraint firstItem="he6-44-5bR" firstAttribute="centerX" secondItem="MrB-UP-vcE" secondAttribute="centerX" id="KuZ-Ev-av2"/>
+                        <constraint firstItem="zCZ-im-Psy" firstAttribute="centerY" secondItem="4Yh-ig-2MY" secondAttribute="centerY" id="OX6-NM-3Q3"/>
+                        <constraint firstItem="4Yh-ig-2MY" firstAttribute="top" secondItem="he6-44-5bR" secondAttribute="bottom" constant="20" id="XpA-Xr-iAW"/>
+                        <constraint firstItem="he6-44-5bR" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="MrB-UP-vcE" secondAttribute="leading" id="eHE-n0-XfV"/>
+                        <constraint firstItem="wiv-Dx-IM9" firstAttribute="centerY" secondItem="6Qt-hO-Lpy" secondAttribute="centerY" id="lVu-66-qcw"/>
+                        <constraint firstItem="zCZ-im-Psy" firstAttribute="leading" secondItem="4Yh-ig-2MY" secondAttribute="trailing" id="lyi-D2-v4V"/>
+                        <constraint firstItem="6Qt-hO-Lpy" firstAttribute="top" secondItem="4Yh-ig-2MY" secondAttribute="bottom" constant="18" id="qhS-BL-VEw"/>
+                        <constraint firstItem="6Qt-hO-Lpy" firstAttribute="leading" secondItem="4Yh-ig-2MY" secondAttribute="leading" id="qqW-4z-hZz"/>
+                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="zCZ-im-Psy" secondAttribute="trailing" constant="20" symbolic="YES" id="ylK-ds-VgC"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.10000000000000001" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="Jbo-7E-18u" secondAttribute="bottom" id="JML-1O-cBO"/>
+                <constraint firstItem="Jbo-7E-18u" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="R6l-Vb-7gT"/>
+                <constraint firstItem="6fC-Ca-7TF" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="TLz-Wb-ZQq"/>
+                <constraint firstItem="MrB-UP-vcE" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="fyU-OJ-pAy"/>
+                <constraint firstAttribute="bottom" secondItem="6fC-Ca-7TF" secondAttribute="bottom" id="hBa-Yh-aeV"/>
+                <constraint firstAttribute="bottom" secondItem="MrB-UP-vcE" secondAttribute="bottom" id="hRy-B0-gWR"/>
+                <constraint firstItem="LA3-gb-fia" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="mBe-15-fTY"/>
+                <constraint firstItem="MrB-UP-vcE" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="nTk-hc-5Fb"/>
+                <constraint firstItem="LA3-gb-fia" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="nbm-ee-QiG"/>
+                <constraint firstAttribute="bottom" secondItem="LA3-gb-fia" secondAttribute="bottom" id="pdb-vX-PRl"/>
+                <constraint firstItem="Jbo-7E-18u" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="wdH-J3-PWC"/>
+                <constraint firstItem="6fC-Ca-7TF" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="zwT-SA-bMe"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="btnCancelUpload" destination="Wpd-B1-IOF" id="cR0-Ph-E5w"/>
+                <outlet property="btnReConnect" destination="fGe-fL-5xZ" id="6fi-IW-OJv"/>
+                <outlet property="btnReUpload" destination="4js-KY-ska" id="ax5-26-y5i"/>
+                <outlet property="connectFailedView" destination="6fC-Ca-7TF" id="gQk-sg-WWx"/>
+                <outlet property="connectTipLabel" destination="ctI-sE-bfX" id="Hsm-T8-BxH"/>
+                <outlet property="loadingImgView" destination="Gck-GT-M0V" id="8G0-i8-Cjc"/>
+                <outlet property="musicLabel" destination="4Yh-ig-2MY" id="2yS-ZE-Uki"/>
+                <outlet property="titleLabel" destination="6Qt-hO-Lpy" id="Ggn-cE-Z74"/>
+                <outlet property="uploadFailedView" destination="LA3-gb-fia" id="cGE-la-7Qs"/>
+                <outlet property="uploadIngView" destination="MrB-UP-vcE" id="eSD-f3-kP3"/>
+                <outlet property="uploadMusicCountLable" destination="UHP-aZ-FbI" id="Y8b-d2-a6X"/>
+                <outlet property="uploadMusicNameLabel" destination="zCZ-im-Psy" id="8db-bi-Nut"/>
+                <outlet property="uploadMusicProgressLabel" destination="wiv-Dx-IM9" id="5CW-aG-on4"/>
+                <outlet property="uploadSuccessView" destination="Jbo-7E-18u" id="zab-G5-Pd3"/>
+            </connections>
+            <point key="canvasLocation" x="-543" y="-91"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="connect_loading" width="20" height="20"/>
+        <image name="icon_up_error" width="50" height="32"/>
+        <image name="icon_up_success" width="50" height="32"/>
+    </resources>
+</document>

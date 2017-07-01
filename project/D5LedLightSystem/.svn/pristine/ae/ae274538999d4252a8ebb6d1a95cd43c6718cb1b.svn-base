@@ -1,0 +1,817 @@
+//
+//  D5LightGroupViewController.m
+//  D5LedLightSystem
+//
+//  Created by PangDou on 16/8/5.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5LightGroupViewController.h"
+#import "D5LightGroupCell.h"
+#import "NSString+Helper.h"
+#import "D5LightGroupNumberViewController.h"
+#import "D5LedZKTBoxData.h"
+#import "D5LedData.h"
+#import "D5LedInitialInfoData.h"
+#import "D5TcpManager.h"
+#import "D5WebViewController.h"
+#import "D5LedList.h"
+#import "D5LightGroupManagerViewController.h"
+#import "D5RoundProgressView.h"
+#import "RealReachability.h"
+
+#define TIP_LOADING_IMAGE [UIImage imageNamed:@"zkt_add_ing"]
+
+#define RESCAN_TITLE    @"重新扫描"
+#define SAVE_TITLE      @"保存"
+
+#define HELP_HTML_NAME @"faq"
+
+#define ADDED_LIGHTS_TIP(lights) [NSString stringWithFormat:@"已添加%@号灯，请继续添加", lights]
+#define NO_LIGHT_TIP @"按安装后顺序从1-6编号并测试一下吧"
+
+@interface D5LightGroupViewController () <UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, D5LightGroupNumberViewControllerDelegate, D5LedListDelegate>
+
+@property (weak, nonatomic) IBOutlet UILabel *tipLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *loadingImgView;
+@property (weak, nonatomic) IBOutlet UICollectionView *lightCollectionView;
+
+@property (nonatomic, strong) NSMutableDictionary *numberingDict; //已选择编号 但还未成功的 键值对：mesh--编号（1-6）
+@property (nonatomic, strong) NSMutableArray *selectedNumberArr; //选择了要编号的meshAddr数组
+
+/*没扫到灯*/
+@property (weak, nonatomic) IBOutlet UIView *noLightView;
+
+/** 在未添加的灯列表中，已编号的灯的lightId数组 */
+@property (nonatomic, strong) NSMutableArray *notAddHasSetNoArr;
+@property (weak, nonatomic) IBOutlet UILabel *wifiWeakTipLabel;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *wifiTipLabelTopMargin;
+
+/* bottom view */
+@property (weak, nonatomic) IBOutlet UIView *bottomView;
+@property (weak, nonatomic) IBOutlet UIButton *btnSave;
+- (IBAction)btnSaveClicked:(UIButton *)sender;
+
+/* 数组 */
+@property (nonatomic, strong) NSMutableArray *lightsArr;
+@property (nonatomic, strong) NSMutableIndexSet *onoffIndexSet;
+
+@property (nonatomic, strong) NSTimer *searchTimer;
+
+@property (nonatomic, assign) NSTimeInterval searchInterval;
+
+@property (nonatomic, strong) D5LightGroupNumberViewController *numberVC;
+
+@property (nonatomic, assign) BOOL  isFirstSearchLight;
+
+@property (weak, nonatomic) IBOutlet D5RoundProgressView *countDownView;
+
+@property (nonatomic, assign) BOOL isPushToHelpVC;
+
+@end
+
+@implementation D5LightGroupViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self initView];
+    [self judgeAddGuide];
+    
+    [[NSUserDefaults standardUserDefaults] setDouble:[D5Date currentTimeStamp] forKey:UM_SEARCH_LAMP_TIME];
+    [[NSUserDefaults standardUserDefaults] setDouble:[D5Date currentTimeStamp] forKey:UM_ADD_LAMP];
+    
+    [D5LedList sharedInstance].delegate = self; // 这里的delegate不能置为空  不管是跳至帮助界面还是pop到管理界面，都不能置空，出口只有管理界面，而管理界面会置空delegate
+    [[D5LedList sharedInstance] startHeartTimer];
+    
+    [self startSearchLights];
+    
+    [self startNotifierNetWork];
+}
+
+- (void)startNotifierNetWork {
+    GLobalRealReachability.autoCheckInterval = 5.0f;
+    GLobalRealReachability.pingTimeout = 5.0f;
+    
+    __weak typeof(self) weakSelf = self;
+    GLobalRealReachability.wifiWeakBlock = ^ {
+        __strong __typeof(weakSelf)strongSelf = weakSelf;
+        if (!strongSelf.wifiWeakTipLabel.hidden) {
+            return ;
+        }
+        strongSelf.wifiWeakTipLabel.hidden = NO;
+        strongSelf.wifiWeakTipLabel.alpha = 0.0f;
+        [strongSelf.view layoutIfNeeded];
+        [UIView animateWithDuration:0.2f animations:^{
+            strongSelf.wifiWeakTipLabel.alpha = 1.0f;
+            strongSelf.wifiTipLabelTopMargin.constant = 0;
+            [strongSelf.view layoutIfNeeded];
+        }];
+    };
+    
+    GLobalRealReachability.wifiStrongBlock = ^ {
+        __strong __typeof(weakSelf)strongSelf = weakSelf;
+        if (strongSelf.wifiWeakTipLabel.hidden) {
+            return ;
+        }
+        [strongSelf.view layoutIfNeeded];
+        [UIView animateWithDuration:0.2f animations:^{
+            strongSelf.wifiWeakTipLabel.alpha = 0.0f;
+            strongSelf.wifiTipLabelTopMargin.constant = -CGRectGetHeight(strongSelf.wifiWeakTipLabel.frame);
+            [strongSelf.view layoutIfNeeded];
+        } completion:^(BOOL finished) {
+            strongSelf.wifiWeakTipLabel.hidden = YES;
+        }];
+    };
+    
+    [GLobalRealReachability startNotifier];
+}
+
+- (void)stopNotifierNetWork {
+    [GLobalRealReachability stopNotifier];
+}
+
+- (void)judgeAddGuide {
+    NSString *key = @"has_add_light_guide";
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    BOOL hasAddedLightGuide = [userDefaults boolForKey:key];
+    if (!hasAddedLightGuide) {
+        [self addGuideViewWithPoint:CGPointMake(10, 50) tipStr:@"添灯、编号有问题\n都可以来这里哦" direction:GuideBgDirectionRight];
+        
+        [userDefaults setBool:YES forKey:key];
+        [userDefaults synchronize];
+    }
+}
+
+- (void)active {
+    if (_searchTimer) {
+        __weak typeof(self) weakSelf = self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            typeof(weakSelf) strongSelf = weakSelf;
+            [strongSelf startRotateForImg:strongSelf.loadingImgView];
+        });
+    }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    [self.view layoutIfNeeded];
+    _wifiTipLabelTopMargin.constant = -CGRectGetHeight(_wifiWeakTipLabel.frame);
+    
+    _isPushToHelpVC = NO;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(active) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tcpConnectSuccess:) name:TCP_CONNECT_SUCCESS object:nil];
+    
+    [self initData];
+    
+    [self active];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [MBProgressHUD hideHUDForView:self.view];
+    
+    // 取消执行
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delaySwitchLoading) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delayCancelNOLoading) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delaySetNOLoading) object:nil];
+    
+    
+    [self resignGuideTip];
+    
+    [self removeNumberVC];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    if (!_isPushToHelpVC) {
+        [self stopSearchTimer];
+    }
+}
+
+- (void)dealloc {
+    DLog(@"dealloc");
+    [self stopNotifierNetWork];
+    [[D5LedList sharedInstance] stopHeartTimer];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+- (void)tcpConnectSuccess:(NSNotification *)notification {
+    @autoreleasepool {
+        D5Tcp *tcp = (D5Tcp *)notification.object;
+        if ([D5TcpManager isCurrentBoxTcp:tcp]) {
+            if (![NSString isValidateString:tcp.serverIP] || ![tcp.serverIP isEqualToString:[D5CurrentBox currentBoxIP]]) {
+                return;
+            }
+            
+            [[D5LedList sharedInstance] startHeartTimer];
+        }
+    }
+}
+
+#pragma mark - 初始化界面view
+- (void)initView {
+    self.title = @"添加新灯";
+    
+    _wifiWeakTipLabel.hidden = YES;
+    
+    [self noLightViewShow:NO];
+    
+    [D5BarItem setLeftBarItemWithImage:BACK_IMAGE target:self action:@selector(back)];
+    [D5BarItem addRightBarItemWithText:@"帮助" color:WHITE_COLOR target:self action:@selector(btnHelpClicked)];
+    
+    [self setBtnEnable:_btnSave enable:NO];
+    DLog(@"initView setBtnEnable");
+}
+
+#pragma mark - 初始化属性
+- (NSMutableArray *)lightsArr {
+    if (!_lightsArr) {
+        _lightsArr = [NSMutableArray array];
+    }
+    return _lightsArr;
+}
+
+- (NSMutableArray *)notAddHasSetNoArr {
+    @autoreleasepool {
+        if (!_notAddHasSetNoArr) {
+            _notAddHasSetNoArr = [NSMutableArray new];
+        }
+        return _notAddHasSetNoArr;
+    }
+}
+
+- (D5LightGroupNumberViewController *)numberVC {
+    @autoreleasepool {
+        if (!_numberVC) {
+            _numberVC = [self.storyboard instantiateViewControllerWithIdentifier:LIGHT_GROUP_NUMBER_VC_ID];
+            _numberVC.delegate = self;
+        }
+        return _numberVC;
+    }
+}
+
+- (NSMutableArray *)selectedNumberArr {
+    if (!_selectedNumberArr) {
+        _selectedNumberArr = [NSMutableArray new];
+    }
+    return _selectedNumberArr;
+}
+
+#pragma mark - 初始化数据
+- (void)initData {
+    NSArray *hasAddedArr = [self hasAddedLightIdArr];
+    [self setTipTextByArr:hasAddedArr];
+}
+
+/**
+ 获取已添加的灯的列表，再将其编号加入数组
+ 
+ @return 已添加的灯的lightID数组
+ */
+- (NSMutableArray *)hasAddedLightIdArr {
+    @autoreleasepool {
+        NSArray *setNoArr = [[D5LedList sharedInstance] arrWithSetNoLedList];
+        if (!setNoArr || setNoArr.count == 0) {
+            return nil;
+        }
+        
+        NSMutableArray *arr = [NSMutableArray new];
+        for (NSDictionary *dict in setNoArr) {
+            @autoreleasepool {
+                int lightID = [dict[LED_STR_ID] intValue];
+                [arr addObject:@(lightID)];
+            }
+        }
+        
+        arr = [NSMutableArray arraySortedNumber:arr ascending:YES]; // 排序
+        return arr;
+    }
+}
+
+/**
+ 设置提示view的信息
+ */
+- (void)setTipTextByArr:(NSArray *)arr {
+    @autoreleasepool {
+        NSString *tipStr = NO_LIGHT_TIP;
+        if (!arr || arr.count == 0) {
+            _tipLabel.text = tipStr;
+            return;
+        }
+        
+        NSString *numberStr = @"";
+        for (int i = 0; i < arr.count; i ++) {
+            @autoreleasepool {
+                if (i > 0) {
+                    numberStr = [numberStr stringByAppendingString:@"、"];
+                }
+                NSNumber *number = [arr objectAtIndex:i];
+                numberStr = [numberStr stringByAppendingFormat:@"%d", [number intValue]];
+            }
+        }
+        
+        tipStr = ADDED_LIGHTS_TIP(numberStr);
+        _tipLabel.text = tipStr;
+    }
+}
+
+#pragma mark - 搜索灯列表
+/**
+ 模拟开始搜索灯的场景 -- 转圈，和开始搜索定时器
+ */
+- (void)startSearchLights {
+    @autoreleasepool {
+        [self startRotateForImg:self.loadingImgView];
+        _isFirstSearchLight = NO;
+        
+        [[D5LedList sharedInstance] getLedListByType:LedListTypeNotAdd];
+        
+        _countDownView.totalInterval = SEARCH_LIGHT_TIME_INTERVAL;
+        _countDownView.hidden = NO;
+        
+        _searchInterval = 0;
+        
+        [self startSearchTimer];
+    }
+}
+
+- (void)startSearchTimer {
+    if (!_searchTimer) {
+        _searchTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(stopSearch) userInfo:nil repeats:YES];
+        [_searchTimer fire];
+    }
+}
+
+/**
+ 停止搜索
+ */
+- (void)stopSearch {
+    if (_searchInterval >= SEARCH_LIGHT_TIME_INTERVAL) {
+        [self stopRotateForImg:_loadingImgView];
+        [self stopSearchTimer];
+        
+        if (self.lightsArr.count == 0) {
+            [self noLightViewShow:YES];
+        }
+    } else {
+        if (!_countDownView.isHidden) {
+            _countDownView.progress = _searchInterval;
+        }
+        _searchInterval ++;
+    }
+}
+
+/**
+ 关闭搜索灯列表的定时器
+ */
+- (void)stopSearchTimer {
+    if (_searchTimer) {
+        [_searchTimer invalidate];
+        _searchTimer = nil;
+    }
+}
+
+#pragma mark - 搜灯列表的delegate
+- (void)ledList:(D5LedList *)list getFinished:(BOOL)isFinished {
+    @autoreleasepool {
+        if (isFinished) {
+            __weak typeof(self) weakSelf = self;
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                typeof(weakSelf) strongSelf = weakSelf;
+                [MBProgressHUD hideHUDForView:strongSelf.view];
+                
+                if (list.listType == LedListTypeHasAdded) { // 已添加的灯
+                    [strongSelf initData];
+                    return ;
+                }
+                
+                if (!strongSelf.searchTimer && [RESCAN_TITLE isEqualToString:strongSelf.btnSave.currentTitle]) {    //搜索完毕且标题为重新扫描 不再更新界面
+                    return;
+                }
+                
+                [strongSelf setBtnEnable:strongSelf.btnSave enable:NO];
+              
+                [strongSelf.lightsArr removeAllObjects]; //先移除之前的
+                [strongSelf.notAddHasSetNoArr removeAllObjects];
+                
+                NSArray *notAddArr = list.notAddLedList;
+                if (notAddArr && notAddArr.count > 0) {
+                    if (strongSelf.searchTimer) {
+                        strongSelf.countDownView.hidden = YES;
+                    }
+                    
+                    if (!strongSelf.isFirstSearchLight) {
+                        strongSelf.isFirstSearchLight = YES;
+                        
+                        NSTimeInterval startTime = [[NSUserDefaults standardUserDefaults] doubleForKey:UM_SEARCH_LAMP_TIME];
+                        if (startTime > 0) {
+                            NSTimeInterval timeValue = [D5Date currentTimeStamp] - startTime;
+                            
+                            double limitTime = 300;
+                            if (timeValue > limitTime) {
+                                timeValue = limitTime;
+                            }
+                            
+                            [MobClick event:UM_SEARCH_LAMP_TIME durations:(int)timeValue];
+                        }
+                    }
+                    
+                    for (NSDictionary *ledDict in notAddArr) {
+                        @autoreleasepool {
+                            D5LedData *ledData = [D5LedData dataWithDict:ledDict];
+                            [strongSelf.lightsArr addObject:ledData];
+                            
+                            if (ledData.lightId > 0) {
+                                [strongSelf.notAddHasSetNoArr addObject:@(ledData.lightId)];
+                                
+                                if (!strongSelf.btnSave.isEnabled) {
+                                    [strongSelf setBtnEnable:strongSelf.btnSave enable:YES];
+                                }
+                            }
+                        }
+                    }
+                    
+                    strongSelf.lightsArr = [NSMutableArray arraySortedByLightIDFrom:strongSelf.lightsArr ascending:YES];    // 对编号的灯进行排序
+                } else {
+                    if (strongSelf.searchTimer) {
+                        [strongSelf noLightViewShow:NO];
+                        strongSelf.countDownView.hidden = NO;
+                    } else {
+                        [strongSelf noLightViewShow:YES];
+                    }
+                }
+                
+                if (strongSelf.lightsArr.count == 0) {
+                    [strongSelf setBtnEnable:strongSelf.btnSave enable:[RESCAN_TITLE isEqualToString:strongSelf.btnSave.currentTitle]];
+                }
+                
+                [strongSelf collectionReload];
+            });
+        }
+    }
+}
+
+- (void)noLightViewShow:(BOOL)isShow {
+    @autoreleasepool {
+        _noLightView.hidden = !isShow;
+        [self setBtnTitle:isShow ? RESCAN_TITLE : SAVE_TITLE forBtn:_btnSave];
+        if (isShow) {
+            [self setBtnEnable:_btnSave enable:isShow];
+        } else {
+            [self setBtnEnable:_btnSave enable:self.lightsArr.count > 0];
+        }
+        DLog(@"setBtnEnable 保存 = %d", _btnSave.enabled);
+    }
+}
+
+- (void)collectionReload {
+    [self.lightCollectionView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO]; //用这种方式解决reload时闪屏
+}
+
+#pragma mark - 编号
+/**
+ 正在编号中的灯 -- 如把row0的灯编号选成3  则0-3  cell位置（0开始) --  灯当前选择的编号(1-6)
+ 
+ @return
+ */
+- (NSMutableDictionary *)numberingDict {
+    @autoreleasepool {
+        if (!_numberingDict) {
+            _numberingDict = [NSMutableDictionary dictionary];
+        }
+        return _numberingDict;
+    }
+}
+
+#pragma mark - 根据条件获取D5LedData
+- (D5LedData *)dataByMeshAddr:(NSInteger)mesh {
+    @autoreleasepool {
+        if (self.lightsArr.count == 0) {
+            return nil;
+        }
+        
+        for (D5LedData *ledData in self.lightsArr) {
+            @autoreleasepool {
+                if (ledData.meshAddress == mesh) {
+                    return ledData;
+                }
+            }
+        }
+        return nil;
+    }
+}
+
+- (void)handleSetOrCancelNO:(BOOL)isFinished {
+    [MBProgressHUD hideHUDForView:self.view];
+    
+    // 取消执行设置和取消编号
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delayCancelNOLoading) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delaySetNOLoading) object:nil];
+    
+    if (isFinished) {
+        //保存view是否显示
+        if (!self.btnSave.isEnabled) {
+            [self setBtnEnable:self.btnSave enable:YES];
+        }
+        
+        //更新lightsArr
+        NSInteger mesh = [[self.selectedNumberArr firstObject] integerValue];
+        D5LedData *ledData = [self dataByMeshAddr:mesh];
+        ledData.lightId = [self.numberingDict[@(mesh)] integerValue]; //修改arr中的data
+        
+        [self.numberingDict removeObjectForKey:@(mesh)]; //移除选择了要编号的dict
+        [self.selectedNumberArr removeObject:@(mesh)]; //移除选择了要编号的mesh
+        
+        self.lightsArr = [NSMutableArray arraySortedByLightIDFrom:self.lightsArr ascending:YES];//对编号的灯进行排序
+        
+        [self collectionReload];
+    } else {
+        [MBProgressHUD showMessage:@"编号失败，请重试"];
+        [self setNoFailedHandle];
+    }
+}
+
+- (void)handleSwitchNew:(BOOL)isFinished {
+    [MBProgressHUD hideHUDForView:self.view];
+    // 取消执行开关
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delaySwitchLoading) object:nil];
+    
+    if (isFinished) {
+        if (self.onoffIndexSet.count > 0) { //有操作开关的row
+            NSInteger row = [self.onoffIndexSet firstIndex];
+            if (row < self.lightsArr.count) {
+                [self.onoffIndexSet removeIndex:row];
+            }
+        }
+    } else {
+        if (self.onoffIndexSet.count > 0) {
+            [self.onoffIndexSet removeIndex:self.onoffIndexSet.firstIndex];
+        }
+    }
+}
+
+- (void)ledListOperateNewLed:(D5LedList *)list operateType:(LedOperateNewType)operateType isFinished:(BOOL)isFinished {
+    if (operateType == LedOperateNewTypeSwitch) {
+        if ([NSThread isMainThread]) {
+            [self handleSwitchNew:isFinished];
+        } else {
+            __weak typeof(self) weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                typeof(weakSelf) strongSelf = self;
+                [strongSelf handleSwitchNew:isFinished];
+            });
+        }
+    } else {
+        if ([NSThread isMainThread]) {
+            [self handleSetOrCancelNO:isFinished];
+        } else {
+            __weak typeof(self) weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                typeof(weakSelf) strongSelf = self;
+                [strongSelf handleSetOrCancelNO:isFinished];
+            });
+        }
+    }
+}
+
+/**
+ 灯的编号失败的处理
+ */
+- (void)setNoFailedHandle {
+    @autoreleasepool {
+        NSInteger mesh = [[self.selectedNumberArr firstObject] integerValue];
+        [self.numberingDict removeObjectForKey:@(mesh)];
+    }
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+}
+
+#pragma mark - collection view delegate and datasource
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return self.lightsArr.count;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    @autoreleasepool {
+        D5LightGroupCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:LIGHT_GROUP_CELL_ID forIndexPath:indexPath];
+        
+        NSInteger row = indexPath.row;
+        if (row < self.lightsArr.count) {
+            cell.btnSwitch.tag = row;
+            [cell.btnSwitch addTarget:self action:@selector(btnSwitchClicked:) forControlEvents:UIControlEventTouchUpInside];
+            
+            D5LedData *data = [self.lightsArr objectAtIndex:row];
+            [cell setData:data isEdit:NO];
+        }
+        
+        return cell;
+    }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    @autoreleasepool {
+        NSInteger row = indexPath.row;
+        if (row < self.lightsArr.count) {
+            D5LedData *data = [self.lightsArr objectAtIndex:row];
+            if (data.onoffStatus == LedOnOffStatusOffline) {
+                [MBProgressHUD showMessage:@"请开灯或检查灯是否正确安装" toView:self.view];
+                return;
+            }
+            
+            NSArray *setNoArr = [[D5LedList sharedInstance] arrWithSetNoLedList];
+            if (data.lightId == -1 && (setNoArr.count + _notAddHasSetNoArr.count >= 6)) { //前提是这个灯为编过号，否则可以点击去取消编号的
+                [MBProgressHUD showMessage:@"6盏灯都已编号，请取消编号后再试"];
+                return;
+            }
+            
+            [self addNumberVC:data];
+        }
+    }
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    @autoreleasepool {
+        CGFloat screenWidth = CGRectGetWidth([UIScreen mainScreen].bounds);
+        CGFloat width = screenWidth / 3;
+        return CGSizeMake(width, CELL_HEIGHT);
+    }
+}
+
+#pragma mark - cell中btnswitch的点击处理
+- (NSMutableIndexSet *)onoffIndexSet {
+    if (!_onoffIndexSet) {
+        _onoffIndexSet = [NSMutableIndexSet new];
+    }
+    return _onoffIndexSet;
+}
+
+- (void)btnSwitchClicked:(UIButton *)sender {
+    @autoreleasepool {
+        NSInteger index = sender.tag;
+        if (index < self.lightsArr.count) {
+            
+            D5LedData *ledData = [self.lightsArr objectAtIndex:index];
+            
+            [self.onoffIndexSet addIndex:index];
+            
+            LedOnOffStatus status = sender.isSelected ? LedOnOffStatusOn : LedOnOffStatusOff;
+            [[D5LedList sharedInstance] operateSingleNewLight:LedOperateNewTypeSwitch withLedData:ledData atIndex:ledData.lightId onoffStatus:status];
+            
+//            NSDictionary *sendDict = @{LED_STR_TYPE : @(LedOperateNewTypeSwitch),
+//                                       LED_STR_MACADDR : ledData.macAddress,
+//                                       LED_STR_INDEX : @(ledData.lightId),
+//                                       LED_STR_ONOFF : @(status)};
+//            D5LedNormalCmd *ledOnOff = [[D5LedNormalCmd alloc] init];
+//            
+//            ledOnOff.strDestMac = [D5CurrentBox currentBoxMac];
+//            ledOnOff.remoteLocalTag = tag_remote;
+//            ledOnOff.remotePort = [D5CurrentBox currentBoxTCPPort];
+//            ledOnOff.remoteIp = [D5CurrentBox currentBoxIP];
+//            ledOnOff.errorDelegate = self;
+//            ledOnOff.receiveDelegate = self;
+//            
+//            [ledOnOff ledSendData:Cmd_Led_Operate withSubCmd:SubCmd_Led_Operate_New withData:sendDict];
+            
+            // 执行开关
+            [self performSelector:@selector(delaySwitchLoading) withObject:nil afterDelay:2.0f];
+        }
+    }
+}
+
+#pragma mark - 延迟执行加载
+- (void)delaySwitchLoading {
+    [MBProgressHUD showLoading:@"" toView:self.view];
+}
+
+- (void)delayCancelNOLoading {
+    [MBProgressHUD showLoading:@"正在取消编号..." toView:self.view];
+}
+
+- (void)delaySetNOLoading {
+    [MBProgressHUD showLoading:@"正在编号..." toView:self.view];
+}
+
+#pragma mark - 编号 delegate
+- (void)lightNumbered:(NumberButtonType)type meshAddr:(NSInteger)meshAddr selectedIndex:(NSInteger)index {
+    [self removeNumberVC];
+    switch (type) {
+        case NumberButtonTypeSure: {
+            D5LedData *ledData = [self dataByMeshAddr:meshAddr];
+            if (ledData.lightId == index) { // 灯的编号和目标编号一致
+                return;
+            }
+            
+            [self.selectedNumberArr addObject:@(meshAddr)]; //选择了要编号的mesh
+            [self.numberingDict setObject:@(index) forKey:@(meshAddr)];//键值对  灯的meshaddr -- 灯当前选择的编号(1-6)
+            
+            if (index != -1) {
+                [[D5LedList sharedInstance] operateSingleNewLight:LedOperateNewTypeSetNo withLedData:ledData atIndex:index onoffStatus:LedOnOffStatusOn];
+                // 执行编号
+                [self performSelector:@selector(delaySetNOLoading) withObject:nil afterDelay:2.0f];
+            } else {
+                [[D5LedList sharedInstance] operateSingleNewLight:LedOperateNewTypeCancel withLedData:ledData atIndex:index onoffStatus:LedOnOffStatusOn];
+                // 执行取消编号
+                [self performSelector:@selector(delayCancelNOLoading) withObject:nil afterDelay:2.0f];
+            }
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+#pragma mark - 点击事件
+- (void)btnHelpClicked {
+    @autoreleasepool {
+        D5WebViewController *webVC = [[UIStoryboard storyboardWithName:@"Web" bundle:nil] instantiateViewControllerWithIdentifier:WEB_VC_ID];
+        if (webVC) {
+            webVC.titleStr = @"常见问题";
+            webVC.htmlFileName = HELP_HTML_NAME;
+            webVC.url = ADD_LED_HELP_URL;
+            _isPushToHelpVC = YES;
+            [self.navigationController pushViewController:webVC animated:YES];
+        }
+    }
+}
+
+- (IBAction)btnSaveClicked:(UIButton *)sender {
+    if ([RESCAN_TITLE isEqualToString:sender.currentTitle]) {
+        [self noLightViewShow:NO];
+        _loadingImgView.hidden = NO;
+        [self startSearchLights];
+        return;
+    }
+    
+    [MBProgressHUD showLoading:@"正在保存..." toView:self.view];
+    [[D5LedList sharedInstance] addLightGroup];
+}
+
+#pragma mark - 添加灯组确认处理
+- (void)ledListAddOK:(D5LedList *)list isFinished:(BOOL)isFinished {
+    __weak typeof(self) weakSelf = self;
+    if (isFinished) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            typeof(weakSelf) strongSelf = weakSelf;
+            [strongSelf back];
+            
+            NSTimeInterval startTime = [[NSUserDefaults standardUserDefaults] doubleForKey:UM_ADD_LAMP];
+            if (startTime > 0) {
+                NSTimeInterval timeValue = [D5Date currentTimeStamp] - startTime;
+                
+                double limitTime = 300;
+                if (timeValue > limitTime) {
+                    timeValue = limitTime;
+                }
+                
+                [MobClick event:UM_ADD_LAMP durations:(int)timeValue];
+            }
+            
+        });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            typeof(weakSelf) strongSelf = weakSelf;
+            [MBProgressHUD hideHUDForView:strongSelf.view];
+            [MBProgressHUD showMessage:@"保存超时，请重新保存"];
+        });
+    }
+}
+
+#pragma mark - 跳转事件
+- (void)addNumberVC:(D5LedData *)data  {
+    @autoreleasepool {
+        UIWindow *window = [UIApplication sharedApplication].keyWindow;
+        
+        self.numberVC.pushLed = data;
+        self.numberVC.isNewScanLight = YES;
+        self.numberVC.noAddSetNoIDArr = [NSMutableArray arrayWithArray:self.notAddHasSetNoArr];
+        [window addSubview:self.numberVC.view];
+        
+        [self.numberVC.view layoutIfNeeded];
+        [self.numberVC judgeSetNoGuide];
+    }
+}
+
+- (void)removeNumberVC {
+    @autoreleasepool {
+        UIWindow *window = [UIApplication sharedApplication].keyWindow;
+        NSArray *subViews = window.subviews;
+        if (subViews && [subViews containsObject:self.numberVC.view]) {
+            [self.numberVC.view removeFromSuperview];
+            
+            _numberVC.delegate = nil;
+            _numberVC = nil;
+        }
+    }
+}
+@end

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="D5UploadingView">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BLW-DS-Ldf" userLabel="Upload Ing View">
+                    <rect key="frame" x="0.0" y="499" width="375" height="168"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kDx-kZ-fPe">
+                            <rect key="frame" x="104.5" y="15" width="167" height="20"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="connect_loading" translatesAutoresizingMaskIntoConstraints="NO" id="2vk-Ll-kAo">
+                                    <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="歌曲上传中 (1 / 21)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fxX-5O-beO">
+                                    <rect key="frame" x="33" y="1" width="134" height="19.5"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                    <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="fxX-5O-beO" firstAttribute="leading" secondItem="2vk-Ll-kAo" secondAttribute="trailing" constant="13" id="Se5-zB-12q"/>
+                                <constraint firstAttribute="trailing" secondItem="fxX-5O-beO" secondAttribute="trailing" id="WBz-eB-9pe"/>
+                                <constraint firstItem="2vk-Ll-kAo" firstAttribute="leading" secondItem="kDx-kZ-fPe" secondAttribute="leading" id="XzY-h3-Z7R"/>
+                                <constraint firstItem="2vk-Ll-kAo" firstAttribute="top" secondItem="kDx-kZ-fPe" secondAttribute="top" id="gib-St-gtR"/>
+                                <constraint firstItem="2vk-Ll-kAo" firstAttribute="centerY" secondItem="kDx-kZ-fPe" secondAttribute="centerY" id="uYh-dI-oZk"/>
+                                <constraint firstItem="fxX-5O-beO" firstAttribute="centerY" secondItem="2vk-Ll-kAo" secondAttribute="centerY" id="v1X-jd-j7r"/>
+                            </constraints>
+                        </view>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="歌曲：" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d2w-C9-YEm">
+                            <rect key="frame" x="36" y="55" width="43" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="走马" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G4f-7h-f4O">
+                            <rect key="frame" x="81" y="55.5" width="29" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="进度：" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QVO-o4-l3R">
+                            <rect key="frame" x="36" y="90" width="43" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20%" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Eso-Ge-hBM">
+                            <rect key="frame" x="81" y="90" width="28" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SNQ-RI-Khd">
+                            <rect key="frame" x="154.5" y="118" width="66" height="32"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                            <state key="normal" title="取消上传">
+                                <color key="titleColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="btnCancelUploadClicked:" destination="iN0-l3-epB" eventType="touchUpOutside" id="P0d-rv-Fdm"/>
+                                <action selector="btnCancelUploadClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="gUe-gp-3JB"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="SNQ-RI-Khd" secondAttribute="bottom" constant="18" id="2Rr-XY-oFb"/>
+                        <constraint firstItem="G4f-7h-f4O" firstAttribute="centerY" secondItem="d2w-C9-YEm" secondAttribute="centerY" id="HEO-TY-ogK"/>
+                        <constraint firstAttribute="height" constant="168" id="Iio-Cn-CgV"/>
+                        <constraint firstItem="QVO-o4-l3R" firstAttribute="top" secondItem="d2w-C9-YEm" secondAttribute="bottom" constant="18" id="RtA-Lg-Dcn"/>
+                        <constraint firstItem="kDx-kZ-fPe" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="BLW-DS-Ldf" secondAttribute="leading" id="ThC-VO-0XN"/>
+                        <constraint firstItem="SNQ-RI-Khd" firstAttribute="centerX" secondItem="BLW-DS-Ldf" secondAttribute="centerX" id="WLw-tY-GXb"/>
+                        <constraint firstItem="Eso-Ge-hBM" firstAttribute="leading" secondItem="G4f-7h-f4O" secondAttribute="leading" id="X4Q-qW-PiH"/>
+                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="G4f-7h-f4O" secondAttribute="trailing" constant="20" symbolic="YES" id="XPS-nY-jwq"/>
+                        <constraint firstItem="kDx-kZ-fPe" firstAttribute="top" secondItem="BLW-DS-Ldf" secondAttribute="top" constant="15" id="cbq-q8-O3O"/>
+                        <constraint firstItem="d2w-C9-YEm" firstAttribute="top" secondItem="kDx-kZ-fPe" secondAttribute="bottom" constant="20" id="d8I-bv-7xZ"/>
+                        <constraint firstItem="Eso-Ge-hBM" firstAttribute="centerY" secondItem="QVO-o4-l3R" secondAttribute="centerY" id="eZ5-Q7-1I1"/>
+                        <constraint firstItem="QVO-o4-l3R" firstAttribute="leading" secondItem="d2w-C9-YEm" secondAttribute="leading" id="hFk-aA-4k6"/>
+                        <constraint firstItem="G4f-7h-f4O" firstAttribute="leading" secondItem="d2w-C9-YEm" secondAttribute="trailing" constant="2" id="lfm-Uh-ly3"/>
+                        <constraint firstItem="d2w-C9-YEm" firstAttribute="leading" secondItem="BLW-DS-Ldf" secondAttribute="leading" constant="36" id="pyG-kf-cew"/>
+                        <constraint firstItem="kDx-kZ-fPe" firstAttribute="centerX" secondItem="BLW-DS-Ldf" secondAttribute="centerX" id="tL2-Ak-wHe"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.10000000000000001" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="BLW-DS-Ldf" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="4lk-eQ-c49"/>
+                <constraint firstItem="BLW-DS-Ldf" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="Rrb-xT-zLA"/>
+                <constraint firstAttribute="bottom" secondItem="BLW-DS-Ldf" secondAttribute="bottom" id="ku4-m9-X75"/>
+            </constraints>
+            <connections>
+                <outlet property="btnCancelUpload" destination="SNQ-RI-Khd" id="2Zs-9I-1pM"/>
+                <outlet property="loadingImgView" destination="2vk-Ll-kAo" id="NsO-aV-cEF"/>
+                <outlet property="uploadMusicCountLable" destination="fxX-5O-beO" id="VoA-ui-ENN"/>
+                <outlet property="uploadMusicNameLabel" destination="G4f-7h-f4O" id="2bh-cj-dbs"/>
+                <outlet property="uploadMusicProgressLabel" destination="Eso-Ge-hBM" id="vsf-ZE-ul4"/>
+            </connections>
+        </view>
+    </objects>
+    <resources>
+        <image name="connect_loading" width="20" height="20"/>
+    </resources>
+</document>

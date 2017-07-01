@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="D5DisconnectTipView">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vDS-WY-haE" userLabel="Connect Failed View">
+                    <rect key="frame" x="0.0" y="499" width="375" height="168"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mNa-6L-Ayi">
+                            <rect key="frame" x="99" y="42" width="177.5" height="32"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_up_error" translatesAutoresizingMaskIntoConstraints="NO" id="XqA-9F-fob">
+                                    <rect key="frame" x="0.0" y="0.0" width="50" height="32"/>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="中控已断开连接" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MBc-2i-n0x">
+                                    <rect key="frame" x="63" y="6.5" width="114.5" height="19.5"/>
+                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                    <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="MBc-2i-n0x" firstAttribute="centerY" secondItem="XqA-9F-fob" secondAttribute="centerY" id="CWf-jC-EeJ"/>
+                                <constraint firstAttribute="trailing" secondItem="MBc-2i-n0x" secondAttribute="trailing" id="U1V-AX-M64"/>
+                                <constraint firstItem="XqA-9F-fob" firstAttribute="centerY" secondItem="mNa-6L-Ayi" secondAttribute="centerY" id="cYL-3J-KX4"/>
+                                <constraint firstItem="XqA-9F-fob" firstAttribute="leading" secondItem="mNa-6L-Ayi" secondAttribute="leading" id="pfX-w0-2Zc"/>
+                                <constraint firstItem="MBc-2i-n0x" firstAttribute="leading" secondItem="XqA-9F-fob" secondAttribute="trailing" constant="13" id="vIv-EQ-jU5"/>
+                                <constraint firstItem="XqA-9F-fob" firstAttribute="top" secondItem="mNa-6L-Ayi" secondAttribute="top" id="xvJ-MW-Lfy"/>
+                            </constraints>
+                        </view>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zk1-W0-L1h">
+                            <rect key="frame" x="152.5" y="112" width="70" height="33"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="点击重连">
+                                <color key="titleColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="btnReConnectClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="YZg-I9-58L"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="mNa-6L-Ayi" firstAttribute="centerX" secondItem="vDS-WY-haE" secondAttribute="centerX" id="9qc-QN-JcK"/>
+                        <constraint firstItem="mNa-6L-Ayi" firstAttribute="top" secondItem="vDS-WY-haE" secondAttribute="top" constant="42" id="BAO-qJ-yP2"/>
+                        <constraint firstItem="mNa-6L-Ayi" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="vDS-WY-haE" secondAttribute="leading" id="RL2-0K-l1O"/>
+                        <constraint firstItem="zk1-W0-L1h" firstAttribute="centerX" secondItem="vDS-WY-haE" secondAttribute="centerX" id="X6E-bZ-Zx5"/>
+                        <constraint firstItem="zk1-W0-L1h" firstAttribute="top" secondItem="mNa-6L-Ayi" secondAttribute="bottom" constant="38" id="kdG-HN-9bN"/>
+                        <constraint firstAttribute="height" constant="168" id="xbX-NW-sRT"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.10000000000000001" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="vDS-WY-haE" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="XvL-6o-dQ7"/>
+                <constraint firstAttribute="bottom" secondItem="vDS-WY-haE" secondAttribute="bottom" id="hAU-hX-uac"/>
+                <constraint firstItem="vDS-WY-haE" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="v0f-tE-LJ5"/>
+            </constraints>
+            <connections>
+                <outlet property="btnReConnect" destination="zk1-W0-L1h" id="AHr-V2-cIt"/>
+                <outlet property="connectTipLabel" destination="MBc-2i-n0x" id="fJQ-QJ-0LQ"/>
+            </connections>
+            <point key="canvasLocation" x="-169" y="8"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icon_up_error" width="50" height="32"/>
+    </resources>
+</document>

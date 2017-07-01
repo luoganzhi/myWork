@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="D5UploadFailedView">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CWq-h3-AzH" userLabel="Upload Failed View">
+                    <rect key="frame" x="0.0" y="499" width="375" height="168"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pnZ-ao-gNn">
+                            <rect key="frame" x="110" y="30" width="154" height="32"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_up_error" translatesAutoresizingMaskIntoConstraints="NO" id="ta9-jE-yif">
+                                    <rect key="frame" x="0.0" y="0.0" width="50" height="32"/>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="歌曲上传失败" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VIN-Pk-Jha">
+                                    <rect key="frame" x="50" y="5.5" width="104" height="21"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="trailing" secondItem="VIN-Pk-Jha" secondAttribute="trailing" id="0bo-No-2h9"/>
+                                <constraint firstItem="ta9-jE-yif" firstAttribute="leading" secondItem="pnZ-ao-gNn" secondAttribute="leading" id="5vL-VC-vNO"/>
+                                <constraint firstItem="VIN-Pk-Jha" firstAttribute="centerY" secondItem="pnZ-ao-gNn" secondAttribute="centerY" id="DKO-X5-WXA"/>
+                                <constraint firstItem="ta9-jE-yif" firstAttribute="centerY" secondItem="pnZ-ao-gNn" secondAttribute="centerY" id="G1W-Xf-eB5"/>
+                                <constraint firstItem="VIN-Pk-Jha" firstAttribute="leading" secondItem="ta9-jE-yif" secondAttribute="trailing" id="eCH-Dt-fPU"/>
+                                <constraint firstItem="ta9-jE-yif" firstAttribute="top" secondItem="pnZ-ao-gNn" secondAttribute="top" id="mRP-Fh-DdE"/>
+                            </constraints>
+                        </view>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hHp-3a-gAe">
+                            <rect key="frame" x="64" y="105" width="70" height="33"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="取消上传">
+                                <color key="titleColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="btnCancelUploadClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="AWs-DC-5ON"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p9y-so-FXe">
+                            <rect key="frame" x="241" y="105" width="70" height="33"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="重新上传">
+                                <color key="titleColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="btnReUploadClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="3n5-zs-jg2"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="168" id="2oT-nW-fjU"/>
+                        <constraint firstItem="hHp-3a-gAe" firstAttribute="centerY" secondItem="p9y-so-FXe" secondAttribute="centerY" id="H1c-Wc-qP1"/>
+                        <constraint firstAttribute="bottom" secondItem="p9y-so-FXe" secondAttribute="bottom" constant="30" id="Jaw-kN-QPI"/>
+                        <constraint firstItem="pnZ-ao-gNn" firstAttribute="top" secondItem="CWq-h3-AzH" secondAttribute="top" constant="30" id="QOk-xJ-DZd"/>
+                        <constraint firstItem="pnZ-ao-gNn" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="CWq-h3-AzH" secondAttribute="leading" constant="67" id="jFn-EV-GNU"/>
+                        <constraint firstItem="pnZ-ao-gNn" firstAttribute="centerX" secondItem="CWq-h3-AzH" secondAttribute="centerX" id="mtY-ns-XO8"/>
+                        <constraint firstAttribute="trailing" secondItem="p9y-so-FXe" secondAttribute="trailing" constant="64" id="sSf-wY-PHJ"/>
+                        <constraint firstItem="hHp-3a-gAe" firstAttribute="leading" secondItem="CWq-h3-AzH" secondAttribute="leading" constant="64" id="vZo-eS-eCc"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.10000000000000001" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="CWq-h3-AzH" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="2sf-SD-IWh"/>
+                <constraint firstItem="CWq-h3-AzH" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="b1a-3G-WzF"/>
+                <constraint firstAttribute="bottom" secondItem="CWq-h3-AzH" secondAttribute="bottom" id="e9Q-O5-pQt"/>
+            </constraints>
+            <connections>
+                <outlet property="btnCancelUpload" destination="hHp-3a-gAe" id="AEu-kb-Mtd"/>
+                <outlet property="btnReUpload" destination="p9y-so-FXe" id="v7j-oh-iqo"/>
+            </connections>
+        </view>
+    </objects>
+    <resources>
+        <image name="icon_up_error" width="50" height="32"/>
+    </resources>
+</document>

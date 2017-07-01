@@ -1,0 +1,483 @@
+//
+//  D5MainViewController.m
+//  D5LedLightSystem
+//
+//  Created by LGZwr on 16/9/7.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5MainViewController.h"
+#import "D5SegMentedControl.h"
+#import "D5PlayMusicViewController.h"
+#import "D5MusicViewController.h"
+#import "D5MusicModel.h"
+
+#import "D5MusicStateModel.h"
+#import "MJExtension.h"
+#import "D5MusicStateMusicModel.h"
+#import "D5MusicStateConfigModel.h"
+#import "UIImageView+WebCache.h"
+#import "D5EffectsModel.h"
+
+#import "D5RuntimeShareInstance.h"
+#import "D5RuntimeMusic.h"
+#import "D5RuntimeEffects.h"
+
+#import "D5DeviceInfo.h"
+#import "D5CheckUpdate.h"
+#import "D5MusicListInstance.h"
+#import "D5BaseListModel.h"
+#import "AppDelegate.h"
+
+@interface D5MainViewController () <D5SegMentedControlDelegate, D5LedNetWorkErrorDelegate,D5LedCmdDelegate>
+@property (weak, nonatomic) IBOutlet D5SegMentedControl *segementView;
+
+
+@property (weak, nonatomic) IBOutlet UIButton *playOrPauseBtn;
+
+@property (weak, nonatomic) IBOutlet UIView *musicViewController;
+@property (weak, nonatomic) IBOutlet UIView *lightViewController;
+
+@property (weak, nonatomic) IBOutlet UIView *titleView;
+@property(assign,nonatomic) CGRect titleFrame;
+
+@property (weak, nonatomic) IBOutlet UIView *noSongStatus;
+@property (weak, nonatomic) IBOutlet UIView *hasSongStatus;
+
+@property (weak, nonatomic) IBOutlet UILabel *songLabel;
+@property (weak, nonatomic) IBOutlet UILabel *lightSpecialLabel;
+@property (weak, nonatomic) IBOutlet UILabel *noSongSpecialLabel;
+
+/** musicCoverUrl */
+@property (nonatomic, strong) NSString *musicCoverUrl;
+
+/** D5MusicStateModel */
+@property (nonatomic, strong) D5MusicStateModel *model;
+
+/** 播放操作,上一首,下一首,暂停 */
+@property (nonatomic, strong) D5LedSpecialCmd *musicControl;
+@property (weak, nonatomic) IBOutlet UIImageView *coverImageView;
+
+/** 升级view */
+@property (weak, nonatomic) IBOutlet UIView *updateView;
+@property (weak, nonatomic) IBOutlet UILabel *updateTipLabel;
+- (IBAction)btnUpdateClicked:(UIButton *)sender;
+- (IBAction)btnCancelUpdateClicked:(UIButton *)sender;
+
+@property (nonatomic, copy) NSString *appUpdateURL;
+
+@end
+
+@implementation D5MainViewController
+#pragma mark - 懒加载
+- (D5LedSpecialCmd *)musicControl {
+    if (!_musicControl) {
+        _musicControl = [[D5LedSpecialCmd alloc] init];
+        _musicControl.remoteLocalTag = tag_remote;
+        _musicControl.errorDelegate = self;
+        _musicControl.receiveDelegate = self;
+        
+        _musicControl.cmdType = SpecialCmdTypePush;
+    }
+    _musicControl.remotePort = [D5CurrentBox currentBoxTCPPort];
+    _musicControl.strDestMac =  [D5CurrentBox currentBoxMac];
+    _musicControl.remoteIp = [D5CurrentBox currentBoxIP];
+    return _musicControl;
+}
+
+#pragma mark - <获取歌曲状态delegate>
+- (void)d5NetWorkError:(D5SocketErrorCodeType)errorType errorMessage:(NSString *)errorMesssage data:(NSDictionary *)data forHeader:(LedHeader *)header {
+    @autoreleasepool {
+        DLog(@"errorType = %d  %@", errorType, errorMesssage);
+        if (errorType == D5SocketErrorCodeTypeLedInUploading) {
+            //DLog(@"获取歌曲状态超时");
+        }        
+    }
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.view layoutIfNeeded];
+    
+    // 不能右滑
+    self.navigationController.interactivePopGestureRecognizer.enabled = NO;
+    
+    _updateView.hidden = YES;
+    
+    // 设置标题栏
+    [self initSegementView];
+    [self judgeSettingGuide];
+
+    self.hasSongStatus.hidden = NO;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runtimeInfoChang) name:Runtime_Info_Update object:nil];
+    
+    // 获取中控运行时的信息
+    [self getRuntimeInfo];
+    [self runtimeInfoChang];
+    
+    [self appBecomeAvtive];
+    
+    DLog(@"检查MAINVC 调用地方-- checkUpdateByLoginStatus");
+    [self checkUpdateByLoginStatus];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkUpdateByLoginStatus) name:CHEKC_ALL_UPDATE object:nil];
+}
+
+- (void)judgeSettingGuide {
+    NSString *key = @"has_setting_guide";
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    BOOL hasAddedLightGuide = [userDefaults boolForKey:key];
+    if (!hasAddedLightGuide) {
+        [self addGuideViewWithPoint:CGPointMake(10, 58) tipStr:@"想修改灯、中控等\n可以点这里哦" direction:GuideBgDirectionRight];
+        
+        [userDefaults setBool:YES forKey:key];
+        [userDefaults synchronize];
+    }
+}
+
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+}
+
+/**
+ 根据登录状态去判断 直接检查更新 还是 添加登录成功的监听(收到监听后再去检查更新)
+ */
+- (void)checkUpdateByLoginStatus {
+    DLog(@"检查MAINVC -- checkUpdateByLoginStatus");
+    @autoreleasepool {
+        if ([D5LedZKTList defaultList].loginStatus == LedLoginStatusLoginSuccess) {
+            [self checkUpdate];
+        } else {
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkUpdate) name:LOGIN_SUCCESS object:nil];
+        }
+    }
+}
+
+/**
+ 检查APP、蓝牙灯以及中控的更新
+ */
+- (void)checkUpdate {
+    @autoreleasepool {
+        _appUpdateURL = nil;
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:LOGIN_SUCCESS object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkUpdateAppFinish:) name:CHECK_UPDATE_APP_FINISH_PUSH_NAME object:nil];
+        
+        D5CheckUpdate *check = [D5CheckUpdate sharedInstance];
+        [check checkAppUpdate];
+        
+        D5DeviceInfo *deviceInfo = [D5CurrentBox currentBoxDeviceInfo];
+        [check checkBoxUpdate:deviceInfo.versionCode];
+        
+        int btVerCode = deviceInfo.btVerCode;
+        if (btVerCode > 0) {
+            [check checkBlueToothUpdate:btVerCode];
+        } else {
+            check.bluetoothUpdate = nil;
+        }
+    }
+}
+
+- (void)checkUpdateAppFinish:(NSNotification *)notification {
+    @autoreleasepool {
+        NSDictionary *userInfo = notification.userInfo;
+        if (userInfo) {
+            BOOL isNeedUpdateApp = [userInfo[CHECK_UPDATE_ISNEED] boolValue];
+            if (isNeedUpdateApp) {      // APP 需要更新
+                BOOL isClickCancelUpdate = [[NSUserDefaults standardUserDefaults] boolForKey:IS_CLICK_CANCEL_UPDATE];
+                if (isClickCancelUpdate) {
+                    return;
+                }
+                
+                D5UpdateModel *appUpdate = [D5CheckUpdate sharedInstance].appUpdate;
+                _appUpdateURL = appUpdate.updateUrl;
+                
+                NSString *tip = appUpdate.updateTip;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    _updateTipLabel.text = tip ? : @"";
+                    _updateView.hidden = NO;
+                });
+            }
+        }
+    }
+}
+
+- (void)appBecomeAvtive {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(getRuntimeInfo)
+                                                 name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+- (void)getRuntimeInfo {
+    if (![D5CurrentBox currentBox]) {
+        return;
+    }
+    // 获取中控运行时的信息
+    [self.musicControl ledSendData:Cmd_Box_Operate withSubCmd:SubCmd_Box_Runtime_Info];
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self setNavigationBarHidden:YES];
+    [self setNavigationBarTranslucent];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [self resignGuideTip];
+}
+
+#pragma mark - 通知界面更新
+- (void)runtimeInfoChang {
+    D5RuntimeShareInstance *instance = [D5RuntimeShareInstance sharedInstance];
+    
+    
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (instance.music.playStatus == Stop || instance.music.playStatus == 0) { // 停止的时候状态栏的显示问题
+            self.songLabel.text = @"音乐与灯光更配哦";
+            self.lightSpecialLabel.text = @"";
+            self.playOrPauseBtn.hidden = YES;
+        } else {
+            self.playOrPauseBtn.hidden = NO;
+            
+            if (instance.music.playStatus == Play) {
+                self.playOrPauseBtn.selected = YES;
+            } else {
+                self.playOrPauseBtn.selected = NO;
+            }
+        }
+        if (instance.music.name) {
+            self.songLabel.text = instance.music.name;
+        }
+        
+        if (instance.colorMode == Color_Scene) {
+            switch (instance.sceneType) {
+                case LedSceneTypeNormal:
+                    self.lightSpecialLabel.text = @"灯光特效：照明场景";
+                    break;
+                case LedSceneTypeWarm:
+                    self.lightSpecialLabel.text = @"灯光特效：温馨场景";
+                    break;
+                case LedSceneTypeParty:
+                    self.lightSpecialLabel.text = @"灯光特效：浪漫场景";
+                    break;
+                case LedSceneTypeCinema:
+                    self.lightSpecialLabel.text = @"灯光特效：冷漠场景";
+                    break;
+                default:
+                    break;
+            }
+            
+        } else if (instance.colorMode == Color_Manual) {
+            self.lightSpecialLabel.text = @"灯光特效：手动模式";
+        } else {
+            if (!instance.effects.name || [instance.effects.name isEqualToString:@""]) { //如果没有通用特效
+                self.lightSpecialLabel.text = @"";
+            } else {
+                if (instance.effects.effectType == Effects_Common) { //通用特效
+                    self.lightSpecialLabel.text = [NSString stringWithFormat:@"灯光特效：%@-%@", instance.music.name, instance.effects.name];
+                } else if (instance.effects.effectType == Effects_Short) { //简短特效
+                    self.lightSpecialLabel.text = [NSString stringWithFormat:@"灯光特效：%@", instance.effects.name];
+
+                } else { // 独有特效
+                    self.lightSpecialLabel.text = [NSString stringWithFormat:@"灯光特效：%@-%@",instance.effects.name, instance.effects.author];
+                }
+            }
+        }
+        
+        if ([instance.music.albumImgUrl isEqualToString:@""] || !instance.music.albumImgUrl) { // 如果没有封面
+            self.coverImageView.image = [UIImage imageNamed:@"music_toolbar_cover"];
+            self.musicCoverUrl = @"";
+        } else { // 如果有封面
+            
+            if ([self.musicCoverUrl isEqualToString:instance.music.albumImgUrl]) return;
+            self.musicCoverUrl = instance.music.albumImgUrl;
+            [self.coverImageView sd_setImageWithURL:[NSURL D5UrlWithString: instance.music.albumImgUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                self.coverImageView.image = [image circleImage]; // 设置有圆角的封面
+   
+            }];
+            
+        }
+       
+        
+        
+    });
+
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+}
+
+
+#pragma mark - initSegement
+- (void)initSegementView {
+    _segementView.delegate = self;
+    
+    _segementView.textSeletedColor = [UIColor colorWithRed:1 green:212/255.0 blue:0 alpha:1];
+    _segementView.textNormalColor = [UIColor colorWithRed:1 green:1 blue:1 alpha:1];
+    _segementView.backgroundSeletedColor = [UIColor clearColor];
+    _segementView.backgroundNormalColor = [UIColor clearColor];
+    
+    [_segementView loadTitleArray:@[@"音乐", @"灯光"]];
+    [self segMentedControl:self.segementView index:0];
+
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(hideTitleView:) name:@"ManualScreen" object:nil];
+     _titleFrame=_titleView.frame;
+//    [self.view insertSubview:self.lightViewController atIndex:self.view.subviews.count];
+}
+
+// 手动进入全屏模式
+-(void)hideTitleView:(NSNotification*)noti {
+    float result=[noti.object floatValue];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (result<=0) {
+            self.titleView.hidden = NO;
+            self.hasSongStatus.hidden = NO;
+
+
+
+        } else {
+            
+            self.titleView.hidden = YES;
+            self.hasSongStatus.hidden = YES;
+
+        }
+    });
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+- (IBAction)playMusciBtnClick:(id)sender {
+    
+    UIStoryboard *sb = [UIStoryboard storyboardWithName:NSStringFromClass([D5PlayMusicViewController class]) bundle:nil];
+    D5PlayMusicViewController *vc = [sb instantiateInitialViewController];
+    
+    [self presentViewController:vc animated:YES completion:nil];
+}
+
+
+- (void)segMentedControl:(D5SegMentedControl *)segMented index:(NSInteger)index
+{
+    // 界面的隐藏于显示
+    self.musicViewController.hidden = (index == 0) ? NO : YES;
+    self.lightViewController.hidden = (index == 1) ? NO : YES;
+        
+    [self resignGuideTip];
+}
+
+- (IBAction)playOrPauseBtnClick:(UIButton *)sender {
+    if (self.playOrPauseBtn.selected == YES) { //如果在播放
+        NSDictionary *dict = @{LED_STR_TYPE: @(LedMusicControlTypePause)};
+        D5LedNormalCmd *musicControl = [[D5LedNormalCmd alloc] init];
+        musicControl.remotePort = [D5CurrentBox currentBoxTCPPort];
+        musicControl.strDestMac =  [D5CurrentBox currentBoxMac];
+        musicControl.remoteLocalTag = tag_remote;
+        musicControl.remoteIp = [D5CurrentBox currentBoxIP];
+        musicControl.errorDelegate = self;
+        musicControl.receiveDelegate = self;
+        
+        [musicControl ledSendData:Cmd_Media_Operate withSubCmd:SubCmd_Music_Control withData:dict];
+    } else {
+        NSDictionary *dict = @{LED_STR_TYPE: @(LedMusicControlTypePlay)};
+        D5LedNormalCmd *musicControl = [[D5LedNormalCmd alloc] init];
+        musicControl.remotePort = [D5CurrentBox currentBoxTCPPort];
+        musicControl.strDestMac =  [D5CurrentBox currentBoxMac];
+        musicControl.remoteLocalTag = tag_remote;
+        musicControl.remoteIp = [D5CurrentBox currentBoxIP];
+        musicControl.errorDelegate = self;
+        musicControl.receiveDelegate = self;
+        
+        [musicControl ledSendData:Cmd_Media_Operate withSubCmd:SubCmd_Music_Control withData:dict];
+
+    }
+}
+
+
+#pragma mark - <D5LedCmdDelegate>
+- (void)ledCmdReceivedData:(LedHeader *)header withData:(NSDictionary *)dict
+{
+    if (header->cmd == Cmd_IO_Operate && header->subCmd ) {
+        
+        NSLog(@"%@",dict);
+    }
+
+       if (header->cmd == Cmd_Box_Operate && header->subCmd == SubCmd_Box_Runtime_Info) { // 运行时中控的信息
+           DLog(@"SubCmd_Box_Runtime_Info = %@", dict);
+        int code = [dict[LED_STR_CODE] intValue];
+        DLog(@"返回音乐 code == %d", code);
+      
+        if (code == LedCodeSuccess) { // 返回成功
+            NSDictionary *data = (NSDictionary *)dict[LED_STR_DATA];
+            NSDictionary *runtimeIfno = (NSDictionary *)data[LED_STR_RUNTIMEINFO];
+            D5RuntimeShareInstance *instance = [D5RuntimeShareInstance sharedInstance];
+            if (!runtimeIfno[LED_STR_MUSIC]) {
+                [instance clear];
+                instance.music.playStatus = Stop;
+                instance.music.albumImgUrl = nil;
+            }
+            
+            if (!runtimeIfno[LED_STR_EFFECTS] && instance.effects) {
+                
+                
+                
+                
+                
+                instance.effects.name = nil;
+            }
+            
+            D5MusicListInstance *listInstance = [D5MusicListInstance sharedInstance];
+            instance = [D5RuntimeShareInstance mj_objectWithKeyValues:runtimeIfno];
+            if((instance.deviceStatus & 0x08) == 0x08){
+            
+                [iToast showButtomTitile:@"请重启中控后再试"];
+            }
+
+            if (listInstance && listInstance.allMusicList.count > 0) {
+                for (D5BaseListModel *model in listInstance.allMusicList) {
+                    if (instance.music.musicId == model.music.musicID) {
+                        model.music.playStatus = Play;
+                    } else {
+                        model.music.playStatus = Stop;
+                    }
+                }
+            }
+            
+              DLog(@"返回音乐 %@", instance.music.name);
+        } else {
+            DLog(@"中控运行时返回信息错误---- %@", dict[LED_STR_MSG]);
+        }
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            // 发通知，通知界面更新
+            [[NSNotificationCenter defaultCenter] postNotificationName:Runtime_Info_Update object:nil];
+            DLog(@"1-5PlayMusic--  mainVC -- post  runtimeInfoChange");
+        });
+        
+    } else {
+        return;
+    }
+}
+
+
+- (IBAction)btnUpdateClicked:(UIButton *)sender {
+    _updateView.hidden = YES;
+    if ([NSString isValidateString:_appUpdateURL]) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:_appUpdateURL]];
+    }
+}
+
+- (IBAction)btnCancelUpdateClicked:(UIButton *)sender {
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:IS_CLICK_CANCEL_UPDATE];
+    _updateView.hidden = YES;
+}
+@end

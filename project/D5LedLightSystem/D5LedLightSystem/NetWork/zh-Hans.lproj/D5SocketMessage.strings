@@ -1,0 +1,12 @@
+/*
+ D5SocketMessage.strings
+ Network
+ 
+ Created by anthonyxoing on 15/9/7.
+ Copyright (c) 2015年 anthonyxoing. All rights reserved.
+ */
+"1" = "通信超时";
+"2" = "UDP断开链接";
+"3" = "TCP断开链接";
+"4" = "UDP数据发送失败";
+"5" = "TCP数据发送失败";

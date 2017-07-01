@@ -1,0 +1,183 @@
+//
+//  D5NewManualViewController.m
+//  D5LedLightSystem
+//
+//  Created by 黄金 on 16/9/12.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5NewManualViewController.h"
+#import "D5ColorPickerView.h"
+#import "D5LedData.h"
+
+@interface D5NewManualViewController() <D5LedListDelegate> {
+//    BOOL _isGetLightList;//已经获取到编号灯的列表
+}
+
+@property (strong, nonatomic) NSMutableArray *lightArray;
+@property (nonatomic, assign) LedOnOffStatus ledStatus;
+
+
+@end
+
+@implementation D5NewManualViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self initColorPicker];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getLedList) name:@"NewManualClick" object:nil];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self getLedList];
+    
+    [self dealWithLEDList:[D5LedList sharedInstance]];
+    _isOpenManualMode = NO;
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    if (self.isOpenManualMode) {
+        [[D5ManualMode sharedInstance] setManualMode:NO];
+    }
+}
+
+#pragma mark - 获取灯列表
+/**
+ 获取灯的列表
+ */
+- (void)getLedList {
+    [D5LedList sharedInstance].delegate = self;
+    [[D5LedList sharedInstance] getLedListByType:LedListTypeHasAdded];
+}
+
+- (void)ledList:(D5LedList *)list getFinished:(BOOL)isFinished {
+    if (!isFinished) {
+        return;
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self dealWithLEDList:list];
+    });
+}
+
+- (void)dealWithLEDList:(D5LedList *)list {
+    @autoreleasepool {
+        NSArray *datas = list.addedLedList;
+       
+        _ledStatus = LedOnOffStatusNotAdd;
+        if (datas && datas.count > 0) {
+            BOOL isHasOn = NO;
+            BOOL allOffOrOffline = NO;
+            
+            _ledStatus = LedOnOffStatusOffline;
+            for (NSDictionary *dic in datas) {
+                D5LedData *data = [D5LedData dataWithDict:dic];
+                LedOnOffStatus onoffStatus = data.onoffStatus;
+                if (onoffStatus == LedOnOffStatusOn) {
+                    isHasOn = YES;
+                    allOffOrOffline = NO;
+                    break;
+                }
+                
+                if (onoffStatus == LedOnOffStatusOff) {
+                    allOffOrOffline = YES;
+                    continue;
+                }
+            }
+            
+            if (isHasOn) {
+                _ledStatus = LedOnOffStatusOn;
+            } else if (allOffOrOffline) {
+                _ledStatus = LedOnOffStatusOff;
+            }
+        }
+    }
+}
+
+#pragma mark - 初始化
+/**
+ 初始化picker
+ */
+- (void)initColorPicker {
+    [_colorPickerView addTarget:self action:@selector(colorChanged:) forControlEvents:UIControlEventValueChanged];
+    
+    _colorPickerView.cursorView.hidden = YES;
+}
+
+#pragma mark - 选择的颜色改变
+- (void)colorChanged:(D5ColorPickerView *)picker {
+    switch (_ledStatus) {
+        case LedOnOffStatusOff:
+            [MBProgressHUD showMessage:@"请开灯后重试"];
+            break;
+        case LedOnOffStatusOffline:
+            [MBProgressHUD showMessage:@"请开灯或检查灯是否正确安装"];
+            break;
+        case LedOnOffStatusNotAdd:
+            [MBProgressHUD showMessage:@"请在“设置-灯组管理”中添加新灯"];
+            break;
+            
+        default: {
+            if (!_isOpenManualMode) {
+                [MobClick event:UM_MANUAL];
+                [[D5ManualMode sharedInstance] setManualMode:YES];
+                _isOpenManualMode = YES;
+                
+                __weak D5NewManualViewController *weakSelf = self;
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [weakSelf changeColorByPicker:picker];
+                });
+            } else {
+                [self changeColorByPicker:picker];
+            }
+        }
+            break;
+    }
+}
+
+- (void)changeColorByPicker:(D5ColorPickerView *)picker {
+    @autoreleasepool {
+        picker.cursorView.hidden = NO;
+        HSVType hsv = picker.currentHSV;
+        RGBType rgb = HSV_to_RGB(hsv);
+        
+        CGFloat r = rgb.r;
+        CGFloat g = rgb.g;
+        CGFloat b = rgb.b;
+        
+        [self sendColorWithRed:r green:g blue:b];
+    }
+}
+
+- (void)sendColorWithRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b {
+    @autoreleasepool {
+        NSDictionary *sendDict = @{LED_STR_RED : @((int)(r * 255.0f)),
+                                   LED_STR_GREEN : @((int)(g * 255.0f)),
+                                   LED_STR_BLUE : @((int)(b * 255.0f))};
+        
+        [[D5LedList sharedInstance] operateAllAddedLight:LedOperateTypeColor parameterDict:sendDict];
+        
+        __weak D5NewManualViewController *weakSelf = self;
+        dispatch_time_t timer = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
+        dispatch_after(timer, dispatch_get_main_queue(), ^{
+            typeof(weakSelf) strongSelf = weakSelf;
+            [UIView animateWithDuration:0.3 animations:^{
+                strongSelf.colorPickerView.cursorView.alpha = 0;
+            } completion:^(BOOL finished) {
+                strongSelf.colorPickerView.cursorView.hidden = YES;
+                strongSelf.colorPickerView.cursorView.alpha = 1;
+            }];
+        });
+    }
+}
+
+- (void)ledListOperateAllLed:(D5LedList *)list operateType:(LedOperateType)operateType isFinished:(BOOL)isFinished {
+    if (operateType == LedOperateTypeColor) {
+        DLog(@"颜色改变成功");
+    }
+}
+
+@end

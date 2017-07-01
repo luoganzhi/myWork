@@ -1,0 +1,12 @@
+/*
+ D5SocketMessage.strings
+ Network
+ 
+ Created by anthonyxoing on 15/9/7.
+ Copyright (c) 2015年 anthonyxoing. All rights reserved.
+ */
+"1" = "socket time out";
+"2" = "UDP disconnect";
+"3" = "TCP disconnect";
+"4" = "UDP send data Failed";
+"5" = "TCP send data Failed";

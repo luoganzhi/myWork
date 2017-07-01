@@ -1,0 +1,67 @@
+//
+//  D5MutiCmd.m
+//  D5NetWork
+//
+//  Created by anthonyxiong on 2016/11/15.
+//  Copyright © 2016年 anthonyxiong. All rights reserved.
+//
+
+#import "D5MutiCmd.h"
+#import "NSObject+runtime.h"
+@interface D5MutiCmd()
+
+
+@property (retain,nonatomic) dispatch_semaphore_t sem;
+@property (strong,nonatomic) NSMutableArray * cmdList;
+@end
+
+@implementation D5MutiCmd
+
+- (instancetype)init {
+    if(self = [super init]){
+        _sem = dispatch_semaphore_create(1);
+    }
+    return self;
+    
+}
+
+- (NSMutableArray *)cmdList {
+    if(!_cmdList){
+        _cmdList = [[NSMutableArray alloc] init];
+    }
+    return _cmdList;
+}
+
+- (void)addCmd:(id)cmd {
+    if (!cmd) return;
+    dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
+    if(![self.cmdList containsObject:cmd]){
+        NSLog(@"addCmd : %@", cmd);
+        [self.cmdList addObject:cmd];
+    }
+    dispatch_semaphore_signal(_sem);
+}
+
+- (void)removeCmd:(id)cmd {
+    dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
+    if([self.cmdList containsObject:cmd]){
+        NSLog(@"removeCmd : %@", cmd);
+        [self.cmdList removeObject:cmd];
+    }
+    dispatch_semaphore_signal(_sem);
+}
+
+- (void)castCmd:(void (^)(id _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop)) block {
+    
+    [self.cmdList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if(obj == nil || obj == NULL || ![NSString isValidateString:[NSObject objectClassName:obj]]){
+            return;
+        } else {
+            if (block) {  // 判断block
+                block(obj, idx, stop);
+            }
+        }
+    }];
+    
+}
+@end

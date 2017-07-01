@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection"  content="telephone=no">
+    <meta  http-equiv="x-rim-auto-match" content="none">
+    <title>帮助</title>
+</head>
+<body>
+<style>
+    body{
+        background: #161D25;
+        color: #B8B6BC;
+        font: 13px/1.4 "Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi Micro Hei",sans-serif;
+    }
+	p{
+		font-size: 16px;
+	}
+    a {
+		font-weight:bold;
+        text-decoration: none;
+    }
+	ul,li
+	{
+		list-style-type:none;
+		padding:0;
+		margin:0;
+		font-size: 14px;
+	}
+	li{
+		margin-top:5px;
+	}
+	.rightDiv{
+		padding:0;
+		margin:0;
+		margin-left:2em;
+	}
+</style>
+<div>
+	<!--如何添加中控-->
+	<p><a name="help_connect_add_device_how">1、 如何添加中控？</a></p>
+	<div class="rightDiv">
+		<ul>
+			<li>1） 初次使用时将中控连接电源，并插入网线与路由器连接，在APP中按步骤添加中控，扫描到的中控名称与中控盒子背面的名称一致;</li>
+			<li>2） 已经添加过中控，在APP“设置-中控管理”中可以选择“切换中控”，退出当前连接的中控，重新连接新的。</li>
+		</ul>
+	</div>
+	<!--连接不上中控-->
+	<p><a name="help_connect_add_device_error">2、 连接不上中控？</a></p>
+	<div class="rightDiv">
+		<ul>
+			<li>1） 将中控断电后重新接入电源，并等待30S;</li>
+			<li>2） 重新插入网线;</li>
+			<li>3） 手机重连Wi-Fi，确保与中控在同一网络;</li>
+			<li>4） 重启路由器;</li>
+			<li>5） 检查路由器是否关闭无线访问限制，取消黑白名单选项;</li>
+			<li>6） 将路由器的加密方式改为WPA/WPA2模式;</li>
+			<li>7） 开启路由器的DHCP功能;</li>
+		</ul>
+	</div>
+</div>
+
+</body>
+</html>

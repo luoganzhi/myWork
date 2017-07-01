@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection"  content="telephone=no">
+    <meta  http-equiv="x-rim-auto-match" content="none">
+    <title>帮助</title>
+</head>
+<body>
+<style>
+    body{
+        background: #161D25;
+        color: #B8B6BC;
+        font: 13px/1.4 "Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi Micro Hei",sans-serif;
+    }
+	p{
+		font-size: 16px;
+	}
+    a {
+		font-weight:bold;
+        text-decoration: none;
+    }
+	ul,li
+	{
+		list-style-type:none;
+		padding:0;
+		margin:0;
+		font-size: 14px;
+	}
+	li{
+		margin-top:5px;
+	}
+	.rightDiv{
+		padding:0;
+		margin:0;
+		margin-left:2em;
+	}
+</style>
+<div>
+	
+	<!--如何添加灯-->
+	<p><a name="help_add_lamp_how">1、 如何添加灯？</a></p>
+	<div class="rightDiv">
+		<ul>
+			<li>1） 将灯安装好并通电开灯，每扫描到一盏，该灯即会闪烁，点击扫描到的灯给灯编号并保存即可添加成功;</li>
+			<li>2） 添灯时，在“灯组管理”页选择了“跳过”，则进入“设置-灯组管理”中重新添加。</li>
+		</ul>
+	</div>
+	<!--如何给灯编号-->
+	<p><a name="help_lamp_id">2、 如何给灯编号？</a></p>
+	<div class="rightDiv">
+		<ul>
+			<li>1) 扫描到新灯后，点击开关图标确定灯的位置，并按灯的安装位置依次从1-6编号;</li>
+			<li>2) 编号的规则为：1和4、2和5、3和6号灯需对称</li>
+			<li>3) 编号时每盏灯都会有各自的颜色做区分，1号为红色、2号为橙色、3号为黄色、4号为绿色、5号为蓝色、6号为紫色，已关灯为灰色。编号完成后会恢复为照明模式。</li>
+		</ul>
+	</div>
+	<!--一直扫描不到灯-->
+	<p><a name="help_search_lamp_error">3、 一直扫描不到灯？</a></p>
+	<div class="rightDiv">
+		<ul>
+			<li>1） 将灯断电后再通电开灯;</li>
+			<li>2） 通过断电再通电方式将灯初始化，分为三短两长，即通电1s后断电再通电，重复三次，然后通电5s后断电再通电，重复两次，完成后灯会闪烁一次。</li>
+		</ul>
+	</div>
+	<!--灯一直离线怎么办-->
+	<p><a name="help_lamp_offline">4、 灯一直离线怎么办？</a></p>
+	<div class="rightDiv">
+		<ul>
+			<li>1) 灯已断电或未开开关，此时将灯的电源及开关打开，灯即可正常使用;</li>
+			<li>2) 将离线的灯删除后并初始化，然后重新添加;</li>
+			<li>3) 灯的蓝牙模块损坏，联系售后更换灯，收到新灯后，再重新添加。</li>
+		</ul>
+	</div>
+</div>
+
+</body>
+</html>

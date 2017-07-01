@@ -1,0 +1,259 @@
+//
+//  D5DeviceReceiveDataAnalyer.m
+//  D5NetWork
+//
+//  Created by anthonyxiong on 2016/11/16.
+//  Copyright © 2016年 anthonyxiong. All rights reserved.
+//
+
+#import "D5DeviceReceiveDataAnalyer.h"
+#import "D5LedCommunication.h"
+#import "D5TcpManager.h"
+#import "NSObject+runtime.h"
+
+@interface D5DeviceReceiveDataAnalyer()
+
+@property (nonatomic, strong) NSMutableData *receiveData;
+
+@end
+
+@implementation D5DeviceReceiveDataAnalyer
+
+- (NSMutableData *)receiveData {
+    if (!_receiveData) {
+        _receiveData = [NSMutableData data];
+    }
+    return _receiveData;
+}
+
+
+/**
+ 根据header获取body
+
+ @param header
+ @return body的dict
+ */
+- (NSDictionary *)bodyDictWithHeader:(LedHeader *)header {
+    @autoreleasepool {
+        LedFlag *flag = (LedFlag *)&header->flag;
+        
+        Byte *body = (Byte *)header + sizeof(LedHeader);
+        
+        uint16_t bodyLen = header->len - sizeof(LedHeader) - 1;
+        if (flag->hasExtentData) { // 有扩展数据
+            Byte *extension = (Byte *)header + sizeof(LedHeader);
+            
+            uint8_t extensionLen = *((uint8_t *)extension);
+            bodyLen -= extensionLen;
+            
+            body = extension + extensionLen;
+        }
+        NSDictionary *resultDict = nil;
+        if (bodyLen > 0) {
+            NSData *bodyData = [NSData dataWithBytes:body length:bodyLen];
+            resultDict = [NSJSONSerialization dictFromJsonData:bodyData];
+        }
+        
+        return resultDict;
+    }
+}
+
+/**
+ body的返回码
+
+ @param dict bodyDict
+ @return 返回码
+ */
+- (int)bodyCodeWithDict:(NSDictionary *)dict {
+    @autoreleasepool {
+        int code = -1;
+        if (dict) {
+            code = [dict[LED_STR_CODE] intValue];
+        }
+        return code;
+    }
+}
+
+/**
+ 是否需要先登录
+
+ @param dict
+ @return
+ */
+- (BOOL)isNeedLoginByCode:(int)code {
+    @autoreleasepool {
+        if (code == LedCodeNotLogin) {
+            LedLoginStatus status = [D5LedZKTList defaultList].loginStatus;
+            if (status == LedLoginStatusLoginSuccess) {
+                [D5LedZKTList defaultList].loginStatus = LedLoginStatusLoginFailed;
+            }
+            
+            [[D5LedZKTList defaultList] sendLoginToBox:[D5CurrentBox currentBoxIP] withMac:[D5CurrentBox currentBoxMac]];
+            
+            return YES;
+        }
+        return NO;
+    }
+}
+
+- (void)receivedData:(NSData *)data from:(NSString *)ip networkType:(D5SocketType)socketType {
+    @autoreleasepool {
+        NSData *analyzedData = nil;
+        if (self.receiveData.length > 0) {
+            [self.receiveData appendData:data];
+            analyzedData = self.receiveData;
+        } else {
+            analyzedData = data;
+        }
+        
+        while (analyzedData.length > 0) {
+            __block LedHeader *header = nil;
+            header = (LedHeader *)[analyzedData bytes];
+            
+            [D5LedBaseCmd changeHeader:header remoteCpuModel:ENDIAN_LITTLE];
+            
+            if (header->len <= analyzedData.length) {
+                if (header->protocolVersion != 1) {
+                    DLog(@"版本号不为1 -- %@", data);
+                    return;
+                }
+                
+                if (header->code == HEADER_CODE) {
+                    __block Byte *receivedData = (Byte *)[analyzedData bytes];
+                    __block NSString *remoteIp = ip;
+                    
+                    DLog(@"----receive ---- %d-%d ", header->cmd, header->subCmd);
+                    
+                    D5MutiCmd *multiCmd = [D5LedCommunication sharedLedModule].cmds;
+                    if (!multiCmd) {
+                        return;
+                    }
+                    
+                    NSDictionary *bodyDict = [self bodyDictWithHeader:header];
+                    if (header->cmd == 4 && header->subCmd == 11) {
+                        NSLog(@"进入4-11 111111");
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"cancelDownloading" object:bodyDict];
+                    }
+
+                    if (header->cmd == 4 && header->subCmd == 8) {
+//                        NSLog(@"音乐下载进度");
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"musicUploadProgress" object:bodyDict];
+                    }
+
+                    int code = [self bodyCodeWithDict:bodyDict];
+                    DLog(@"返回数据中 code = %d", code);
+                    if ([self isNeedLoginByCode:code]) { // 如果需要先登录  则先登录
+                        DLog(@"------未登录 需要先登录---%d-%d", header->cmd, header->subCmd);
+                         break;
+                    }
+                    
+                    if (header->cmd == 4 && header->subCmd == 7 && (code == D5SocketErrorCodeTypeExtDevicesNotMounted || code == -107 || code == -108 || code == -109)) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:SD_USB_Refresh object:nil];
+                    }
+                    if(code == D5SocketErrorCodeTypeBluetooth_Error){
+                        [iToast showButtomTitile:@"请重启中控后再试"];
+                    }
+
+                    if (!bodyDict || code == LedCodeSuccess) { // 没body或者有body且成功
+                        if (socketType == D5SocketTypeUdp && header->cmd == Cmd_Box_Operate && header->subCmd == SubCmd_Box_Get_Info) {
+                            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                                DLog(@"升级---UPDATE_BOX_SUCCESS");
+                                [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+                                [[NSNotificationCenter defaultCenter] postNotificationName:UPDATE_BOX_SUCCESS object:nil userInfo:@{@"body" : bodyDict}];
+                            });
+                            break;
+                        }
+                        [multiCmd castCmd:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                            if (obj &&
+                                [NSString isValidateString:[NSObject objectClassName:obj]] &&
+                                [obj respondsToSelector:@selector(getResult:body:from:)] &&
+                                ((((D5LedBaseCmd *)obj).headerCmd == header->cmd &&
+                                  ((D5LedBaseCmd *)obj).headerSubCmd == header->subCmd) ||
+                                 (header->cmd == Cmd_Box_Operate && header->subCmd == SubCmd_Box_Runtime_Info) ||
+                                 (header->cmd == Cmd_IO_Operate && header -> subCmd == SubCmd_File_ExtDeviceType) ||
+                                 (header->cmd == Cmd_IO_Operate && header->subCmd == SubCmd_File_Trans_Progress) ||
+                                  (header->cmd == Cmd_IO_Operate && header->subCmd == SubCmd_File_Bt_Update_Progress )) // 没有主动发送命令 所以不能用来对比
+                                ) {
+                                
+                                if (header->cmd == 4 && header->subCmd == 9) {
+                                    NSLog(@"进入4-9 ---------");
+                                }
+                                // 推送、广播、心跳的不用判断sn
+                                if ((header->cmd == Cmd_Box_Operate && (header->subCmd == SubCmd_Box_Scan ||
+                                                                        header->subCmd == SubCmd_Box_Heart)) ||
+                                    (header->cmd == Cmd_Led_Operate && (header->subCmd == SubCmd_Led_List ||
+                                                                        header->subCmd == SubCmd_Led_Heart)) ||
+                                    (header->cmd == Cmd_Box_Operate && header->subCmd == SubCmd_Box_Runtime_Info) || (header->cmd == Cmd_IO_Operate && header -> subCmd == SubCmd_File_ExtDeviceType) ||
+                                    (header->cmd == Cmd_IO_Operate && header->subCmd == SubCmd_File_Trans_Progress) ||
+                                    (header->cmd == Cmd_IO_Operate && header->subCmd == SubCmd_File_Update_Progress) ||
+                                    (header->cmd == Cmd_IO_Operate && header->subCmd == SubCmd_File_Bt_Update_Progress) ||
+                                    (((D5LedBaseCmd *)obj).sn == header->sn) || (header->cmd ==Cmd_IO_Operate  && header->subCmd == SubCmd_File_Update_Progress)) {
+                                    DLog(@"----接收 ---- %d-%d ", header->cmd, header->subCmd);
+                                
+                                    
+                                    if (header->cmd == Cmd_Box_Operate && header->subCmd == SubCmd_Box_App_Login) {
+                                        [D5LedZKTList defaultList].loginStatus = LedLoginStatusLoginSuccess;
+                                        // 登录成功 -- 则发送未发送的数据包
+                                        D5Tcp *tcp = [[D5TcpManager defaultTcpManager] tcpOfServer:[D5CurrentBox currentBoxIP] port:[D5CurrentBox currentBoxTCPPort]];
+                                        if (tcp && tcp.isConnected) {
+                                            [[D5LedCommunication sharedLedModule] sendNotSendDatasByTcp:tcp];
+                                        }
+                                    }
+                                    
+                                    [obj getResult:header body:bodyDict from:remoteIp];
+                                }
+                            }
+                        }];
+                    } else {    // 有body但失败
+                        [multiCmd castCmd:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                            if (obj &&
+                                [NSString isValidateString:[NSObject objectClassName:obj]] &&
+                                [obj respondsToSelector:@selector(cmdError:withMsg:withHeader:withData:from:)] &&
+                                ((D5LedBaseCmd *)obj).headerCmd == header->cmd &&
+                                ((D5LedBaseCmd *)obj).headerSubCmd == header->subCmd &&
+                                ((D5LedBaseCmd *)obj).sn == header->sn) {
+                                
+                                DLog(@"------ 接收到 error 信息  %d-%d ---- %d-%@", header->cmd, header->subCmd, code, bodyDict[LED_STR_MSG]);
+                                if (code == D5SocketErrorCodeTypeLedInFollowModel) { // 属于多灯随动模式
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            //                [MBProgressHUD showMessage:@"请退出多灯随动模式后再试"];
+                                            UIView *v = [UIApplication sharedApplication].keyWindow;
+                                            [MBProgressHUD showMessage:@"请退出多灯随动模式后再试" toView:v];
+                                        });
+                                        
+                                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                                            [MBProgressHUD hideHUD];
+                                        });
+                                        
+
+                                }
+                                
+                                [obj cmdError:code withMsg:bodyDict[LED_STR_MSG] withHeader:header withData:bodyDict[LED_STR_DATA]  from:remoteIp];
+                            }
+
+                        }];
+                    }
+                    
+                    if (header->len < analyzedData.length) { //继续解析下一个包的数据
+                        NSData *nextData = [NSData dataWithBytes:receivedData + header->len length:(analyzedData.length - header->len)];
+                        analyzedData = nil;
+                        analyzedData = nextData;
+                    } else {
+                        analyzedData = nil;
+                        self.receiveData = [NSMutableData dataWithData:analyzedData]; // 新加的
+                        break;
+                    }
+                }
+            } else {
+                self.receiveData = [NSMutableData dataWithData:analyzedData];
+                break;
+            }
+        }
+    }
+    
+}
+
+
+
+@end
+

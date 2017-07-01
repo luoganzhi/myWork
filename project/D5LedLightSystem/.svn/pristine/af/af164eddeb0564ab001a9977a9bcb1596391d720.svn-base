@@ -1,0 +1,138 @@
+//
+//  D5ConnectedManngerViewController.m
+//  D5LedLightSystem
+//
+//  Created by LGZwr on 2017/2/10.
+//  Copyright © 2017年 PangDou. All rights reserved.
+//
+
+#import "D5ConnectedManngerViewController.h"
+#import "D5WiredController.h"
+#import "D5WifiConnectedController.h"
+
+#define ConnectManngerHelp @"帮助"
+
+#define WiredStoryboardVc @"WiredStoryboard"
+#define WifiStoryboardVc @"WifiStoryboard"
+
+@interface D5ConnectedManngerViewController ()
+
+/** wiredVC */
+@property (nonatomic, strong) D5WiredController *wiredVC;
+
+/** wifiVC */
+@property (nonatomic, strong) D5WifiConnectedController *wifiVC;
+
+@end
+
+@implementation D5ConnectedManngerViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self initView];
+//    [self addConncetWired];
+//    [self addConnectWIFI];
+    self.title = @"连接管理";
+    [D5BarItem setLeftBarItemWithImage:BACK_IMAGE target:self action:@selector(back)];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(wiredOrWifiView) name:SETBOXINFO object:nil];
+    
+//    __weak typeof(self) weakSelf = self;
+//    
+//    [self.wiredVC setWiredChangeSuccessBlock:^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//
+//        [weakSelf.wiredVC.view removeFromSuperview];
+//
+////            [weakSelf initView];
+//        });
+//        
+//    }];
+//    
+//    [self.wifiVC setWifiChangeSuccessBlock:^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            
+//            [weakSelf.wifiVC.view removeFromSuperview];
+//            
+////            [weakSelf initView];
+//        });
+//        
+//
+//    }];
+
+
+}
+
+- (void)wiredOrWifiView
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+
+        [self.wiredVC.view removeFromSuperview];
+        [self.wifiVC.view removeFromSuperview];
+        self.wifiVC = nil;
+        self.wiredVC = nil;
+        [self initView];
+    });
+}
+
+- (D5WiredController *)wiredVC
+{
+    if (!_wiredVC) {
+        _wiredVC = [self.storyboard instantiateViewControllerWithIdentifier:WiredStoryboardVc];
+        _wiredVC.view.frame = CGRectMake(0, 64, MainScreenWidth, MainScreenHeight - 64);
+    }
+    return _wiredVC;
+}
+
+
+- (D5WifiConnectedController *)wifiVC
+{
+    if (!_wifiVC) {
+        _wifiVC = [self.storyboard instantiateViewControllerWithIdentifier:WifiStoryboardVc];
+        _wifiVC.view.frame = CGRectMake(0, 64, MainScreenWidth, MainScreenHeight - 64);
+    }
+    return _wifiVC;
+}
+
+
+- (void)initView{
+       D5DeviceInfo *deviceInfo = [D5CurrentBox currentBoxDeviceInfo];
+    switch (deviceInfo.connectType) {
+        case NetConnectTypeWIFI:   // 无线连接
+            [self addConnectWIFI];
+            break;
+            
+        case NetConnectTypeWired:  // 有线连接
+            
+            [self addConncetWired];
+            break;
+            
+        default:
+            break;
+    }
+}
+
+#pragma mark - 页面跳转
+- (void)addConnectWIFI // 无线界面
+{
+    if (self.wifiVC) {
+        [self.view addSubview:self.wifiVC.view];
+    }
+}
+
+- (void)addConncetWired // 有线界面
+{
+    if (self.wiredVC) {
+        [self.view addSubview:self.wiredVC.view];
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+@end

@@ -1,0 +1,236 @@
+//
+//  D5LedList.m
+//  D5LedLightSystem
+//
+//  Created by zhangyu on 2016/11/10.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5LedList.h"
+
+#import "NSObject+runtime.h"
+
+#define HEART_TIME_INTERVAL 5.0f
+
+static D5LedList *instance = nil;
+
+@interface D5LedList() <D5LedCmdDelegate, D5LedNetWorkErrorDelegate> {
+    Class _oldClass;
+}
+
+/** 搜索灯的列表 */
+@property (nonatomic, strong) D5LedSpecialCmd *ledList;
+
+@property (nonatomic, strong) D5LedSpecialCmd *ledHeart;
+
+@property (nonatomic, strong) NSTimer *heartTimer;
+
+@end
+
+@implementation D5LedList
+
+//- (void)setDelegate:(id<D5LedListDelegate>)delegate {
+//    _delegate = delegate;
+//    _oldClass = [self objectGetClass:_delegate];
+//}
+
+//- (BOOL)checkDelegate {
+//    if (!_delegate) {
+//        return NO;
+//    }
+//
+//    Class nowClass = [self objectGetClass:_delegate];
+//    return nowClass && (nowClass == _oldClass);
+//}
+
+/**
+ 实例化 -- 单例
+ 
+ @return 单例
+ */
++ (D5LedList *)sharedInstance {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[D5LedList alloc] init];
+    });
+    return instance;
+}
+
+/**
+ 销毁单例
+ */
+- (void)dealloc {
+    instance = nil;
+    
+    if (_ledList) {
+        [_ledList finishReceive];
+    }
+}
+
+#pragma mark - 发送心跳
+- (D5LedSpecialCmd *)ledHeart {
+    if (!_ledHeart) {
+        _ledHeart = [[D5LedSpecialCmd alloc] init];
+        
+        _ledHeart.remoteLocalTag = tag_remote;
+        _ledHeart.errorDelegate = self;
+        _ledHeart.receiveDelegate = self;
+        
+        _ledHeart.cmdType = SpecialCmdTypeHeart;
+    }
+    
+    _ledHeart.remotePort = [D5CurrentBox currentBoxTCPPort];
+    _ledHeart.strDestMac = [D5CurrentBox currentBoxMac];
+    _ledHeart.remoteIp = [D5CurrentBox currentBoxIP];
+    return _ledHeart;
+}
+
+/**
+ 发送一次心跳，然后每隔5s再发送一次心跳
+ */
+- (void)startHeartTimer {
+    if (!_heartTimer) {
+        _heartTimer = [NSTimer scheduledTimerWithTimeInterval:HEART_TIME_INTERVAL target:self selector:@selector(sendHeart) userInfo:nil repeats:YES];
+        [_heartTimer fire];
+    }
+}
+
+/**
+ 停止发送心跳的定时器 -- 只有退出该界面才调用此方法
+ */
+- (void)stopHeartTimer {
+    if (_heartTimer) {
+        [_heartTimer invalidate];
+        _heartTimer = nil;
+    }
+    
+    [self.ledHeart finishReceive];
+}
+
+/**
+ 发送心跳
+ */
+- (void)sendHeart {
+    [self.ledHeart ledSendData:Cmd_Led_Operate withSubCmd:SubCmd_Led_Heart];
+}
+
+#pragma mark - 获取灯的列表
+- (D5LedSpecialCmd *)ledList {
+    @autoreleasepool {
+        if (!_ledList) {
+            _ledList = [[D5LedSpecialCmd alloc] init];
+            
+            _ledList.remoteLocalTag = tag_remote;
+            _ledList.errorDelegate = self;
+            _ledList.receiveDelegate = self;
+            
+            _ledList.cmdType = SpecialCmdTypePush;
+        }
+        
+        _ledList.remotePort = [D5CurrentBox currentBoxTCPPort];
+        _ledList.remoteIp = [D5CurrentBox currentBoxIP];
+        _ledList.strDestMac = [D5CurrentBox currentBoxMac];
+        return _ledList;
+    }
+}
+
+- (void)getLedListByType:(LedListType)type {
+    _allOffline = NO;
+    _listType = -1;
+    [self.ledList ledSendData:Cmd_Led_Operate withSubCmd:SubCmd_Led_List withData:@{LED_STR_TYPE : @(type)}];
+}
+
+- (NSArray *)arrWithSetNoLedList {
+    @autoreleasepool {
+        if (!_addedLedList || _addedLedList.count == 0) {
+            return nil;
+        }
+        
+        NSMutableArray *arr = [NSMutableArray array];
+        for (NSDictionary *dict in _addedLedList) {
+            @autoreleasepool {
+                int lightID = [dict[LED_STR_ID] intValue];
+                if (lightID > 0) {  // 已编号
+                    [arr addObject:dict];
+                }
+            }
+        }
+        return [NSArray arrayWithArray:arr];
+    }
+}
+
+#pragma mark - 获取到列表的处理
+- (void)ledCmdReceivedData:(LedHeader *)header withData:(NSDictionary *)dict {
+    @autoreleasepool {
+        if (!dict) {
+            return;
+        }
+        if ((header->cmd == Cmd_Led_Operate && header->subCmd == SubCmd_Led_List)) {
+            NSDictionary *data = dict[LED_STR_DATA];
+            
+            if (!data) {
+                _addedLedList = nil;
+                _notAddLedList = nil;
+                return;
+            }
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSArray *arr = data[LED_STR_LIST];
+                for (NSDictionary *dic in arr) {
+                    @autoreleasepool {
+                        int lighid = [dic[@"id"] intValue];
+                        NSLog(@"灯列表11-- %d", lighid);
+                    }
+                }
+                
+                LedListType type = [data[LED_STR_TYPE] intValue];
+                _listType = type;
+                switch (type) {
+                    case LedListTypeNotAdd:    // 未添加的灯
+                        _notAddLedList = [NSArray arrayWithArray:arr];
+                        break;
+                    case LedListTypeHasAdded:  // 已添加的灯
+                        _addedLedList = [NSArray arrayWithArray:arr];
+                        break;
+                        
+                    default:
+                        break;
+                }
+                
+                BOOL hasOnlineLed = NO;
+                if (_addedLedList && _addedLedList.count > 0) {
+                    for (NSDictionary *dict in _addedLedList) {
+                        LedOnOffStatus status = [dict[LED_STR_STATUS] intValue];
+                        if (status != LedOnOffStatusOffline) {
+                            hasOnlineLed = YES;
+                            break;
+                        }
+                    }
+                }
+                
+                _allOffline = !hasOnlineLed;
+                if (_delegate && [_delegate respondsToSelector:@selector(ledList:getFinished:)]) {
+                    [_delegate ledList:self getFinished:YES];
+                }
+            });
+        }
+    }
+}
+
+- (void)d5NetWorkError:(D5SocketErrorCodeType)errorType errorMessage:(NSString *)errorMesssage data:(NSDictionary *)data forHeader:(LedHeader *)header {
+    @autoreleasepool {
+        if ((header->cmd == Cmd_Led_Operate && header->subCmd == SubCmd_Led_List)) {
+            if (errorType == D5SocketErrorCodeTypeTimeOut) {
+                return;
+            }
+            
+            dispatch_async(dispatch_get_main_queue(), ^{ //[self checkDelegate] &&
+                if ([_delegate respondsToSelector:@selector(ledList:getFinished:)]) {
+                    [_delegate ledList:self getFinished:NO];
+                }
+            });
+        }
+    }
+}
+
+@end

@@ -1,0 +1,369 @@
+//
+//  D5LedList.m
+//  D5LedLightSystem
+//
+//  Created by zhangyu on 2016/11/10.
+//  Copyright © 2016年 PangDou. All rights reserved.
+//
+
+#import "D5LedList.h"
+#import "D5LedData.h"
+
+#import "NSObject+runtime.h"
+
+#define HEART_TIME_INTERVAL 5.0f
+
+static D5LedList *instance = nil;
+
+@interface D5LedList() <D5LedCmdDelegate, D5LedNetWorkErrorDelegate> {
+    Class _oldClass;
+}
+
+/** 搜索灯的列表 */
+@property (nonatomic, strong) D5LedSpecialCmd *ledList;
+
+@property (nonatomic, strong) D5LedSpecialCmd *ledHeart;
+
+@property (nonatomic, strong) NSTimer *heartTimer;
+
+@end
+
+@implementation D5LedList
+
+- (void)setDelegate:(id<D5LedListDelegate>)delegate {
+    _delegate = delegate;
+    _oldClass = [self objectGetClass:_delegate];
+}
+
+- (BOOL)checkDelegate {
+    if (!_delegate) {
+        return NO;
+    }
+
+    Class nowClass = [self objectGetClass:_delegate];
+    return nowClass && (nowClass == _oldClass);
+}
+
+/**
+ 实例化 -- 单例
+ 
+ @return 单例
+ */
++ (D5LedList *)sharedInstance {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[D5LedList alloc] init];
+    });
+    return instance;
+}
+
+/**
+ 销毁单例
+ */
+- (void)dealloc {
+    instance = nil;
+    
+    if (_ledList) {
+        [_ledList finishReceive];
+    }
+}
+
+#pragma mark - 发送心跳
+- (D5LedSpecialCmd *)ledHeart {
+    if (!_ledHeart) {
+        _ledHeart = [[D5LedSpecialCmd alloc] init];
+        
+        _ledHeart.remoteLocalTag = tag_remote;
+        _ledHeart.errorDelegate = self;
+        _ledHeart.receiveDelegate = self;
+        
+        _ledHeart.cmdType = SpecialCmdTypeHeart;
+    }
+    
+    _ledHeart.remotePort = [D5CurrentBox currentBoxTCPPort];
+    _ledHeart.strDestMac = [D5CurrentBox currentBoxMac];
+    _ledHeart.remoteIp = [D5CurrentBox currentBoxIP];
+    return _ledHeart;
+}
+
+/**
+ 发送一次心跳，然后每隔5s再发送一次心跳
+ */
+- (void)startHeartTimer {
+    if (!_heartTimer) {
+        _heartTimer = [NSTimer scheduledTimerWithTimeInterval:HEART_TIME_INTERVAL target:self selector:@selector(sendHeart) userInfo:nil repeats:YES];
+        [_heartTimer fire];
+    }
+}
+
+/**
+ 停止发送心跳的定时器 -- 只有退出该界面才调用此方法
+ */
+- (void)stopHeartTimer {
+    if (_heartTimer) {
+        [_heartTimer invalidate];
+        _heartTimer = nil;
+    }
+    
+    [self.ledHeart finishReceive];
+}
+
+/**
+ 发送心跳
+ */
+- (void)sendHeart {
+    [self.ledHeart ledSendData:Cmd_Led_Operate withSubCmd:SubCmd_Led_Heart];
+}
+
+
+#pragma mark - 操作灯
+- (void)addLightGroup {
+    @autoreleasepool {
+        D5LedNormalCmd *addLightOK = [[D5LedNormalCmd alloc] init];
+        
+        addLightOK.strDestMac = [D5CurrentBox currentBoxMac];
+        addLightOK.remoteLocalTag = tag_remote;
+        addLightOK.remotePort = [D5CurrentBox currentBoxTCPPort];
+        addLightOK.remoteIp = [D5CurrentBox currentBoxIP];
+        addLightOK.errorDelegate = self;
+        addLightOK.receiveDelegate = self;
+        
+        [addLightOK ledSendData:Cmd_Led_Operate withSubCmd:SubCmd_Led_Add_Ok];
+    }
+}
+
+- (void)operateSingleNewLight:(LedOperateNewType)operateType withLedData:(D5LedData *)ledData atIndex:(NSInteger)index onoffStatus:(LedOnOffStatus)status {
+    if (!ledData) {
+        return;
+    }
+    
+    @autoreleasepool {
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        dict[LED_STR_TYPE] = @(operateType);
+        dict[LED_STR_MACADDR] = ledData.macAddress;
+        
+        if (operateType == LedOperateNewTypeSwitch) {
+            dict[LED_STR_INDEX] = @(ledData.lightId);   // 开关时，index为ledData的ID
+            dict[LED_STR_ONOFF] = @(status);
+        } else if (operateType == LedOperateNewTypeSetNo) {
+            dict[LED_STR_INDEX] = @(index); //编号时，idnex为位置索引所在的row
+        } else {
+            dict[LED_STR_INDEX] = @(ledData.lightId);   // 取消编号时，index为ledData的ID
+        }
+        
+        D5LedNormalCmd *ledOperate = [[D5LedNormalCmd alloc] init];
+        
+        ledOperate.strDestMac = [D5CurrentBox currentBoxMac];
+        ledOperate.remoteLocalTag = tag_remote;
+        ledOperate.remotePort = [D5CurrentBox currentBoxTCPPort];
+        ledOperate.remoteIp = [D5CurrentBox currentBoxIP];
+        ledOperate.errorDelegate = self;
+        ledOperate.receiveDelegate = self;
+        
+        [ledOperate ledSendData:Cmd_Led_Operate withSubCmd:SubCmd_Led_Operate_New withData:dict];
+    }
+}
+
+#pragma mark - 获取灯的列表
+- (D5LedSpecialCmd *)ledList {
+    @autoreleasepool {
+        if (!_ledList) {
+            _ledList = [[D5LedSpecialCmd alloc] init];
+            
+            _ledList.remoteLocalTag = tag_remote;
+            _ledList.errorDelegate = self;
+            _ledList.receiveDelegate = self;
+            
+            _ledList.cmdType = SpecialCmdTypePush;
+        }
+        
+        _ledList.remotePort = [D5CurrentBox currentBoxTCPPort];
+        _ledList.remoteIp = [D5CurrentBox currentBoxIP];
+        _ledList.strDestMac = [D5CurrentBox currentBoxMac];
+        return _ledList;
+    }
+}
+
+- (void)getLedListByType:(LedListType)type {
+    _allOffline = NO;
+    _listType = -1;
+    [self.ledList ledSendData:Cmd_Led_Operate withSubCmd:SubCmd_Led_List withData:@{LED_STR_TYPE : @(type)}];
+}
+
+- (NSArray *)arrWithSetNoLedList {
+    @autoreleasepool {
+        if (!_addedLedList || _addedLedList.count == 0) {
+            return nil;
+        }
+        
+        NSMutableArray *arr = [NSMutableArray array];
+        for (NSDictionary *dict in _addedLedList) {
+            @autoreleasepool {
+                int lightID = [dict[LED_STR_ID] intValue];
+                if (lightID > 0) {  // 已编号
+                    [arr addObject:dict];
+                }
+            }
+        }
+        return [NSArray arrayWithArray:arr];
+    }
+}
+
+#pragma mark - 获取到数据的处理
+- (void)ledCmdReceivedData:(LedHeader *)header withData:(NSDictionary *)dict {
+    @autoreleasepool {
+        if (!dict) {
+            return;
+        }
+        
+        NSDictionary *data = dict[LED_STR_DATA];
+        if (header->cmd == Cmd_Led_Operate) {
+            switch (header->subCmd) {
+                case SubCmd_Led_List:
+                    [self handleGetedLedList:data isFinished:YES];
+                    break;
+                    
+                case SubCmd_Led_Add_Ok:
+                    [self handleAddOKCmdReturn:YES];
+                    break;
+                    
+                case SubCmd_Led_Operate_New: {  // 操作新灯
+                    if (data) {
+                        LedOperateNewType type = [data[LED_STR_TYPE] intValue];
+                        [self handleOperateNewCmd:type isFinished:YES];
+                    }
+                }
+                    break;
+                    
+                default:
+                    break;
+            }
+           
+        }
+    }
+}
+
+/**
+ 处理确认添加灯组命令的返回信息
+
+ @param isSuccess 确认添加灯组是否成功
+ */
+- (void)handleAddOKCmdReturn:(BOOL)isSuccess {
+    if ([self checkDelegate] && [_delegate respondsToSelector:@selector(ledListAddOK:isFinished:)]) {
+        [_delegate ledListAddOK:self isFinished:isSuccess];
+    }
+}
+
+/**
+ 操作灯组的结果
+ 
+ @param type 操作类型
+ @param isFinished 是否操作成功
+ */
+- (void)handleOperateNewCmd:(LedOperateNewType)type isFinished:(BOOL)isFinished {
+    if ([self checkDelegate] && [_delegate respondsToSelector:@selector(ledListOperateNewLed:operateType:isFinished:)]) {
+        [_delegate ledListOperateNewLed:self operateType:type isFinished:isFinished];
+    }
+}
+
+/**
+ 处理获取到的灯组列表
+
+ @param data 获取到的灯组信息
+ @param isFinished 是否获取成功
+ */
+- (void)handleGetedLedList:(NSDictionary *)data isFinished:(BOOL)isFinished {
+    @autoreleasepool {
+        if (!data) {
+            _addedLedList = nil;
+            _notAddLedList = nil;
+            
+            isFinished = NO;
+        }
+        
+        if (!isFinished) {  // 不成功，则只调用代理
+            [self ledListResponseDelegate:isFinished];
+            return;
+        }
+        
+        
+        NSArray *arr = data[LED_STR_LIST];
+        for (NSDictionary *dic in arr) {
+            @autoreleasepool {
+                int lighid = [dic[@"id"] intValue];
+                NSLog(@"灯列表11-- %d", lighid);
+            }
+        }
+        
+        LedListType type = [data[LED_STR_TYPE] intValue];
+        _listType = type;
+        
+        if (type == LedListTypeNotAdd) {            // 未添加的灯
+            _notAddLedList = [NSArray arrayWithArray:arr];
+        } else if (type == LedListTypeHasAdded) {   // 已添加的灯
+            _addedLedList = [NSArray arrayWithArray:arr];
+        }
+        
+        BOOL hasOnlineLed = NO;
+        if (_addedLedList && _addedLedList.count > 0) {
+            for (NSDictionary *dict in _addedLedList) {
+                LedOnOffStatus status = [dict[LED_STR_STATUS] intValue];
+                if (status != LedOnOffStatusOffline) {
+                    hasOnlineLed = YES;
+                    break;
+                }
+            }
+        }
+        
+        _allOffline = !hasOnlineLed;
+        [self ledListResponseDelegate:isFinished];
+    }
+}
+
+/**
+ 调用获取列表的代理方法
+
+ @param isFinished 是否获取成功
+ */
+- (void)ledListResponseDelegate:(BOOL)isFinished {
+    if ([self checkDelegate] && [_delegate respondsToSelector:@selector(ledList:getFinished:)]) {
+        if ([NSThread isMainThread]) {
+            [_delegate ledList:self getFinished:isFinished];
+        } else {
+            __weak typeof(self) weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                typeof(weakSelf) strongSelf = weakSelf;
+                [strongSelf.delegate ledList:strongSelf getFinished:isFinished];
+            });
+        }
+    }
+}
+
+- (void)d5NetWorkError:(D5SocketErrorCodeType)errorType errorMessage:(NSString *)errorMesssage data:(NSDictionary *)data forHeader:(LedHeader *)header {
+    @autoreleasepool {
+        if (header->cmd == Cmd_Led_Operate) {
+            switch (header->subCmd) {
+                case SubCmd_Led_List:
+                    [self handleGetedLedList:nil isFinished:NO];
+                    break;
+                    
+                case SubCmd_Led_Add_Ok:
+                    [self handleAddOKCmdReturn:NO];
+                    break;
+                    
+                case SubCmd_Led_Operate_New: {
+                    if (data) {
+                        LedOperateNewType type = [data[LED_STR_TYPE] intValue];
+                        [self handleOperateNewCmd:type isFinished:NO];
+                    }
+                }
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+@end

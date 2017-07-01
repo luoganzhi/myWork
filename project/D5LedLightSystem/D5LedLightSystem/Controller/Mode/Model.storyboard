@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+    </dependencies>
+    <scenes>
+        <!--Model View Controller-->
+        <scene sceneID="Q0o-9x-JXT">
+            <objects>
+                <viewController storyboardIdentifier="MODEL_VC" id="EGN-9O-U5A" customClass="D5ModelViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="1L0-hp-5bc"/>
+                        <viewControllerLayoutGuide type="bottom" id="15o-aU-0QO"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="QTH-bk-KNW">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="model_bg" translatesAutoresizingMaskIntoConstraints="NO" id="S2o-uc-caB">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                            </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cO6-L7-QAK">
+                                <rect key="frame" x="54" y="143" width="212" height="242"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QIs-JM-8fm" customClass="MyButton">
+                                        <rect key="frame" x="0.0" y="0.0" width="93" height="110"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="110" id="ODp-Oh-Q7H"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <state key="normal" title="照明" image="model_ indoor">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="inDoorBtnClick:" destination="EGN-9O-U5A" eventType="touchUpInside" id="eET-u9-srq"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aqb-ld-4zM" customClass="MyButton">
+                                        <rect key="frame" x="119" y="0.0" width="93" height="110"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <state key="normal" title="温馨" image="model_sweetness">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="sweetBtnClick:" destination="EGN-9O-U5A" eventType="touchUpInside" id="2k3-O3-g8m"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lsS-8N-eyX" customClass="MyButton">
+                                        <rect key="frame" x="0.0" y="132" width="93" height="110"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <state key="normal" title="放松" image="model_relax">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="relaxBtnClick:" destination="EGN-9O-U5A" eventType="touchUpInside" id="huO-6H-g3w"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gZo-OF-8sg" customClass="MyButton">
+                                        <rect key="frame" x="119" y="132" width="93" height="110"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <state key="normal" title="影院" image="model_cinema">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="cinemaBtnClick:" destination="EGN-9O-U5A" eventType="touchUpInside" id="5ft-JL-nWK"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstItem="lsS-8N-eyX" firstAttribute="leading" secondItem="QIs-JM-8fm" secondAttribute="leading" id="3gp-jD-dMG"/>
+                                    <constraint firstItem="QIs-JM-8fm" firstAttribute="top" secondItem="cO6-L7-QAK" secondAttribute="top" id="611-UK-wIx"/>
+                                    <constraint firstItem="gZo-OF-8sg" firstAttribute="centerY" secondItem="lsS-8N-eyX" secondAttribute="centerY" id="62o-7n-rC3"/>
+                                    <constraint firstItem="aqb-ld-4zM" firstAttribute="width" secondItem="QIs-JM-8fm" secondAttribute="width" id="CWe-Hb-Td8"/>
+                                    <constraint firstItem="aqb-ld-4zM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="QIs-JM-8fm" secondAttribute="trailing" id="ElU-65-7eT"/>
+                                    <constraint firstAttribute="trailing" secondItem="aqb-ld-4zM" secondAttribute="trailing" id="OfL-OT-6wT"/>
+                                    <constraint firstAttribute="height" constant="242" id="Pqn-12-8BE"/>
+                                    <constraint firstItem="aqb-ld-4zM" firstAttribute="centerY" secondItem="QIs-JM-8fm" secondAttribute="centerY" id="Q0i-sH-XRV"/>
+                                    <constraint firstItem="gZo-OF-8sg" firstAttribute="trailing" secondItem="aqb-ld-4zM" secondAttribute="trailing" id="QrP-Os-o5u"/>
+                                    <constraint firstItem="gZo-OF-8sg" firstAttribute="height" secondItem="QIs-JM-8fm" secondAttribute="height" id="XjA-hJ-8Sg"/>
+                                    <constraint firstAttribute="bottom" secondItem="lsS-8N-eyX" secondAttribute="bottom" id="Y9Q-ec-MQb"/>
+                                    <constraint firstItem="lsS-8N-eyX" firstAttribute="top" relation="greaterThanOrEqual" secondItem="QIs-JM-8fm" secondAttribute="bottom" priority="999" id="b8J-O5-QI7"/>
+                                    <constraint firstItem="gZo-OF-8sg" firstAttribute="width" secondItem="QIs-JM-8fm" secondAttribute="width" id="cO4-LS-lMi"/>
+                                    <constraint firstItem="lsS-8N-eyX" firstAttribute="height" secondItem="QIs-JM-8fm" secondAttribute="height" id="dDl-OC-LKM"/>
+                                    <constraint firstItem="QIs-JM-8fm" firstAttribute="leading" secondItem="cO6-L7-QAK" secondAttribute="leading" id="gZB-hj-lcT"/>
+                                    <constraint firstItem="aqb-ld-4zM" firstAttribute="height" secondItem="QIs-JM-8fm" secondAttribute="height" id="q0R-dD-2aC"/>
+                                    <constraint firstItem="lsS-8N-eyX" firstAttribute="width" secondItem="QIs-JM-8fm" secondAttribute="width" id="uev-4J-ghR"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0HG-Qi-wEw">
+                                <rect key="frame" x="0.0" y="517" width="320" height="1"/>
+                                <color key="backgroundColor" white="1" alpha="0.59999999999999998" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="a8F-zQ-ZPa"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Kg-eG-yLw">
+                                <rect key="frame" x="0.0" y="518" width="320" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="50" id="bsY-YS-pQu"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <state key="normal" title="取消">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="btnCloseClicked:" destination="EGN-9O-U5A" eventType="touchUpInside" id="Ipx-1W-4ch"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="15o-aU-0QO" firstAttribute="top" secondItem="5Kg-eG-yLw" secondAttribute="bottom" id="16U-Po-mVW"/>
+                            <constraint firstItem="0HG-Qi-wEw" firstAttribute="centerX" secondItem="QTH-bk-KNW" secondAttribute="centerX" id="317-kh-Azb"/>
+                            <constraint firstItem="cO6-L7-QAK" firstAttribute="centerX" secondItem="QTH-bk-KNW" secondAttribute="centerX" id="7aV-S1-WQ2"/>
+                            <constraint firstItem="cO6-L7-QAK" firstAttribute="width" secondItem="QTH-bk-KNW" secondAttribute="width" multiplier="0.66" id="Agl-kU-mhG"/>
+                            <constraint firstItem="5Kg-eG-yLw" firstAttribute="centerX" secondItem="QTH-bk-KNW" secondAttribute="centerX" id="Er9-H9-qQT"/>
+                            <constraint firstItem="5Kg-eG-yLw" firstAttribute="width" secondItem="QTH-bk-KNW" secondAttribute="width" id="Fhp-gG-IQh"/>
+                            <constraint firstItem="S2o-uc-caB" firstAttribute="width" secondItem="QTH-bk-KNW" secondAttribute="width" id="Jx0-7v-nB0"/>
+                            <constraint firstItem="S2o-uc-caB" firstAttribute="centerX" secondItem="QTH-bk-KNW" secondAttribute="centerX" id="ZfW-iv-eJ4"/>
+                            <constraint firstItem="cO6-L7-QAK" firstAttribute="top" secondItem="1L0-hp-5bc" secondAttribute="bottom" constant="123" id="fg0-P2-SfC"/>
+                            <constraint firstItem="S2o-uc-caB" firstAttribute="height" secondItem="QTH-bk-KNW" secondAttribute="height" id="kTD-sq-Cvw"/>
+                            <constraint firstItem="5Kg-eG-yLw" firstAttribute="height" secondItem="QTH-bk-KNW" secondAttribute="height" multiplier="0.09" priority="999" id="l7l-LT-c4z"/>
+                            <constraint firstItem="5Kg-eG-yLw" firstAttribute="top" secondItem="0HG-Qi-wEw" secondAttribute="bottom" id="lhr-oH-Zh2"/>
+                            <constraint firstItem="S2o-uc-caB" firstAttribute="centerY" secondItem="QTH-bk-KNW" secondAttribute="centerY" id="qZZ-pt-yIb"/>
+                            <constraint firstItem="0HG-Qi-wEw" firstAttribute="width" secondItem="QTH-bk-KNW" secondAttribute="width" id="vg3-QS-kjh"/>
+                        </constraints>
+                    </view>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+                    <connections>
+                        <outlet property="animationView" destination="cO6-L7-QAK" id="Bjo-yz-8Kv"/>
+                        <outlet property="animationViewHeight" destination="Pqn-12-8BE" id="uoG-r3-RW9"/>
+                        <outlet property="animationViewTopMargin" destination="fg0-P2-SfC" id="6Zd-If-mhW"/>
+                        <outlet property="btnCinema" destination="gZo-OF-8sg" id="jfT-bf-4xc"/>
+                        <outlet property="btnClose" destination="5Kg-eG-yLw" id="iJa-kr-kqt"/>
+                        <outlet property="btnIndoor" destination="QIs-JM-8fm" id="KJ2-vF-JiA"/>
+                        <outlet property="btnRelax" destination="lsS-8N-eyX" id="21k-k7-BIB"/>
+                        <outlet property="btnSweet" destination="aqb-ld-4zM" id="OdH-O8-PjH"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="miz-LQ-BPo" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-173" y="261"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="model_ indoor" width="65" height="65"/>
+        <image name="model_bg" width="540" height="960"/>
+        <image name="model_cinema" width="65" height="65"/>
+        <image name="model_relax" width="65" height="65"/>
+        <image name="model_sweetness" width="65" height="65"/>
+    </resources>
+</document>
