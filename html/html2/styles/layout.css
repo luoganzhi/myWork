@@ -1,0 +1,123 @@
+/*
+* @Author: apple
+* @Date:   2017-08-09 17:02:35
+* @Last Modified by:   apple
+* @Last Modified time: 2017-08-09 17:02:35
+*/
+
+section, header, article, nav {
+	display: block;
+}
+
+* {
+	padding: 0;
+	margin: 0;
+}
+
+#imagegallery li {
+	display: inline;
+}
+
+#about header {
+	background-image: url(../images/back1.gif);
+}
+
+#photos header {
+	background-image: url(../images/back2.gif);
+}
+
+#live header {
+	background-image: url(../images/back3.gif);
+}
+
+#contact header {
+	background-image: url(../images/back4.gif);
+}
+
+#slideshow {
+	width: 150px;
+	height: 150px;
+	position: relative;
+	overflow: hidden;
+}
+
+#preview {
+	position: absolute;
+	border-width: 0;
+	outline-width: 0;
+}
+
+body {
+	margin: 1em 10%;
+	background-image: url(../images/background.gif);
+	background-attachment: fiexd;
+	background-position: top left;
+	/*background-repeat: repeat-x;*/
+	max-wi9dth: 80em;
+}
+
+header {
+	background-image: url(../images/guitarist.gif);
+	background-repeat: repeat;
+	background-position: top right;
+	border-width: .1em;
+	border-style: solid;;
+	border-bottom-width: 0;
+}
+
+header nav {
+	background-image: url(../images/navbar.gif);
+	background-position: bottom left;
+	background-repeat: repeat-x;
+	border-width: .1em;
+	border-style: solid;
+	border-bottom-width: 0;
+	border-top-width: 0;
+	padding-left: 10%;
+}
+
+header nav ul {
+	width: 100%;
+	overflow: hidden;
+	border-left-width: .1em;
+	border-left-style: solid;
+}
+
+header nav li {
+	display: inline;
+}
+
+header nav li a {
+	display: block;
+	float: left;;
+	padding: .5em 2em;
+	border-right: .1em solid;
+}
+
+article {
+	border-width: .1em;
+	border-style: solid;
+	border-top-width: 0;
+	padding: 1em 10%;
+	line-height: 1.8em;
+}
+article img {
+	border-width: .1em;
+	border-style: solid;
+	outline-width: .1em;
+	outline-style: solid;
+}
+
+td {
+	padding: .5em 3em;
+}
+
+dl {
+	overflow: hidden;
+}
+dt {
+	float: left;
+}
+dd {
+	float: left;
+}
